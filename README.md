@@ -22,40 +22,33 @@ CLI: prady   |   Extension: .pr   |   Compiler: Rust + LLVM
 
 ## 🚀 Quick Start
 
-### ⚡ 1-Line Automated Installation (No Git Clone Required)
+### Installing from GitHub
 
-Install the pre-built `prady` compiler and `prady-lsp` language server directly onto your machine:
-
-**Windows (PowerShell):**
-```powershell
-irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex
-```
-
-**Windows (Command Prompt / CMD):**
-```cmd
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex"
-```
-
-**macOS & Linux (Bash / Zsh):**
-```bash
-curl -fsSL https://raw.githubusercontent.com/technopradyumn/prady/main/install.sh | sh
-```
-
-> *The installer downloads the native binaries, registers them in your system/user `PATH` environment variable permanently, and makes `prady` immediately callable anywhere on your computer.*
-
----
-
-### Building from Source (Alternative)
-If you prefer to compile manually using Rust:
+Clone and build the Prady compiler and language server using Rust:
 
 ```bash
+# 1. Clone the official repository from GitHub
+git clone https://github.com/technopradyumn/prady.git
+cd prady
+
+# 2. Build optimized release binaries
 cargo build --release
+
+# 3. Install compiler and LSP globally to system PATH via Cargo
+cargo install --path compiler/prady-cli
+cargo install --path compiler/prady-lsp
 ```
 
-The resulting `prady` CLI binary is available at `target/release/prady`.
+The resulting binaries are located in `target/release/` or accessible globally as `prady` and `prady-lsp`.
 
-### Checking a Prady File
+### Checking & Running Prady Code
 ```bash
+# Check compiler version
+prady version
+
+# Run a Prady program
+prady run examples/hello.pr
+
 # Verify syntax, AST, and report rich compiler diagnostics
 cargo run -p prady-cli -- check examples/hello.pr
 
