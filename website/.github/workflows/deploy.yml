@@ -28,15 +28,26 @@ jobs:
       #   VERCEL_ORG_ID — from .vercel/project.json after running `vercel link` once locally
       #   VERCEL_PROJECT_ID — same file
 
+      - name: Check for Vercel credentials
+        id: check_token
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "has_token=false" >> $GITHUB_OUTPUT
+            echo "VERCEL_TOKEN secret is not set yet. Skipping workflow deployment."
+            echo "To enable automatic deployments, connect https://github.com/technopradyumn/prady-website directly on https://vercel.com/new"
+          else
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy to Vercel (production)
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.check_token.outputs.has_token == 'true'
         run: vercel --prod --token "${{ secrets.VERCEL_TOKEN }}" --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Deploy to Vercel (preview)
-        if: github.ref != 'refs/heads/main'
+        if: github.ref != 'refs/heads/main' && steps.check_token.outputs.has_token == 'true'
         run: vercel --token "${{ secrets.VERCEL_TOKEN }}" --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
