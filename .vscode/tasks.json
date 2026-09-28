@@ -1,0 +1,51 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Prady: Check File (Error Detector)",
+      "type": "shell",
+      "command": "prady check \"${file}\"",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "owner": "prady",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": [
+          {
+            "regexp": "^(error|warning)(?:\\[([^\\]]+)\\])?:\\s*(.*)$",
+            "severity": 1,
+            "code": 2,
+            "message": 3
+          },
+          {
+            "regexp": "^\\s*-->\\s*(.*):(\\d+):(\\d+)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "loop": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "Prady: Run Current File",
+      "type": "shell",
+      "command": "prady run \"${file}\"",
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared"
+      }
+    }
+  ]
+}

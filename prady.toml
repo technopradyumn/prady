@@ -1,0 +1,26 @@
+[package]
+name = "prady-core"
+version = "0.1.0"
+authors = ["Pradyumn", "Antigravity Team"]
+license = "MIT OR Apache-2.0"
+description = "Prady Programming Language core project manifest"
+
+[quality]
+profile = "strict"
+
+[quality.limits]
+max_function_complexity = 10
+max_function_lines = 40
+max_class_methods = 15
+max_interface_methods = 5
+max_parameters = 5
+max_inheritance_depth = 3
+
+[architecture]
+composition_over_inheritance = true
+require_interfaces_for_external_services = true
+
+[security]
+deny_hardcoded_secrets = true
+deny_unsafe = true
+require_https = true

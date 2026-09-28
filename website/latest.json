@@ -1,0 +1,30 @@
+{
+  "_comment": "This file is updated automatically by the release workflow. Edit manually only for hotfixes.",
+  "version": "0.1.0",
+  "releaseDate": "2026-09-28",
+  "releaseNotesUrl": "https://github.com/technopradyumn/prady/releases/tag/v0.1.0",
+  "assets": {
+    "windows-x64": {
+      "url": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-x86_64-pc-windows-msvc.zip",
+      "checksum": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-x86_64-pc-windows-msvc.zip.sha256"
+    },
+    "macos-intel": {
+      "url": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-x86_64-apple-darwin.tar.gz",
+      "checksum": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-x86_64-apple-darwin.tar.gz.sha256"
+    },
+    "macos-arm": {
+      "url": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-aarch64-apple-darwin.tar.gz",
+      "checksum": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-aarch64-apple-darwin.tar.gz.sha256"
+    },
+    "linux-x64": {
+      "url": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-x86_64-unknown-linux-gnu.tar.gz",
+      "checksum": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-x86_64-unknown-linux-gnu.tar.gz.sha256"
+    },
+    "linux-arm": {
+      "url": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-aarch64-unknown-linux-gnu.tar.gz",
+      "checksum": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/prady-v0.1.0-aarch64-unknown-linux-gnu.tar.gz.sha256"
+    },
+    "install-sh": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/install.sh",
+    "install-ps1": "https://github.com/technopradyumn/prady/releases/download/v0.1.0/install.ps1"
+  }
+}

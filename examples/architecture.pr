@@ -1,0 +1,20 @@
+// examples/architecture.pr
+// Prady Architecture as Code — Compile-time Layer Policy Enforcement
+
+architecture backend {
+    layer presentation;
+    layer application;
+    layer domain;
+    layer infrastructure;
+
+    presentation -> application;
+    application -> domain;
+    infrastructure -> domain;
+
+    domain cannot import presentation;
+    domain cannot import infrastructure;
+}
+
+fn main() {
+    print("Architecture verified according to backend policy contract.");
+}

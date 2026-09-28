@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = [
+    "compiler/prady-diagnostics",
+    "compiler/prady-ast",
+    "compiler/prady-lexer",
+    "compiler/prady-parser",
+    "compiler/prady-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Prady Team"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/technopradyumn/prady"
+description = "The Prady Programming Language"

@@ -1,0 +1,202 @@
+# GitHub Actions: Release workflow for the prady compiler
+# Triggered by pushing a tag like v0.2.0
+# Builds binaries for all platforms, packages installers, and attaches them to the GitHub Release.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write  # needed to upload release assets
+
+env:
+  CARGO_TERM_COLOR: always
+  BINARY_NAME: prady
+
+jobs:
+  # ─── 1. Run tests first ──────────────────────────────────────────────────
+  test:
+    name: Test before release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --workspace
+
+  # ─── 2. Build per-platform binaries ──────────────────────────────────────
+  build:
+    name: Build (${{ matrix.target }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows x64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive_ext: .zip
+            binary_ext: .exe
+          # macOS Intel
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive_ext: .tar.gz
+            binary_ext: ""
+          # macOS Apple Silicon
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive_ext: .tar.gz
+            binary_ext: ""
+          # Linux x64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive_ext: .tar.gz
+            binary_ext: ""
+          # Linux ARM64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            archive_ext: .tar.gz
+            binary_ext: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable + target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release binary
+        run: cargo build --release --package prady-cli --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+
+      - name: Determine version tag
+        id: version
+        shell: bash
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Package archive (Windows)
+        if: matrix.archive_ext == '.zip'
+        shell: pwsh
+        run: |
+          $name = "${{ env.BINARY_NAME }}-${{ steps.version.outputs.tag }}-${{ matrix.target }}"
+          New-Item -ItemType Directory -Path $name
+          Copy-Item "target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}${{ matrix.binary_ext }}" "$name/"
+          Copy-Item "README.md", "LICENSE" "$name/" -ErrorAction SilentlyContinue
+          Compress-Archive -Path "$name/*" -DestinationPath "$name.zip"
+          echo "ASSET=$name.zip" >> $env:GITHUB_ENV
+
+      - name: Package archive (Unix)
+        if: matrix.archive_ext == '.tar.gz'
+        shell: bash
+        run: |
+          name="${{ env.BINARY_NAME }}-${{ steps.version.outputs.tag }}-${{ matrix.target }}"
+          mkdir "$name"
+          cp "target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}" "$name/"
+          cp README.md LICENSE "$name/" 2>/dev/null || true
+          tar czf "$name.tar.gz" "$name"
+          echo "ASSET=$name.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Generate SHA256 checksum
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            certutil -hashfile "$ASSET" SHA256 | grep -v "^CertUtil" | tr -d ' \r\n' > "$ASSET.sha256"
+          else
+            sha256sum "$ASSET" > "$ASSET.sha256"
+          fi
+
+      - name: Upload archive to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ env.ASSET }}
+            ${{ env.ASSET }}.sha256
+          generate_release_notes: true
+
+  # ─── 3. Generate install scripts and upload ───────────────────────────────
+  install-scripts:
+    name: Upload install scripts
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version tag
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Create install.sh (macOS / Linux)
+        run: |
+          cat > install.sh << 'SCRIPT'
+          #!/usr/bin/env sh
+          set -e
+          VERSION="${{ steps.version.outputs.tag }}"
+          BASE="https://github.com/technopradyumn/prady/releases/download/${VERSION}"
+          OS=$(uname -s)
+          ARCH=$(uname -m)
+          case "${OS}-${ARCH}" in
+            Linux-x86_64)   FILE="prady-${VERSION}-x86_64-unknown-linux-gnu.tar.gz" ;;
+            Linux-aarch64)  FILE="prady-${VERSION}-aarch64-unknown-linux-gnu.tar.gz" ;;
+            Darwin-x86_64)  FILE="prady-${VERSION}-x86_64-apple-darwin.tar.gz" ;;
+            Darwin-arm64)   FILE="prady-${VERSION}-aarch64-apple-darwin.tar.gz" ;;
+            *) echo "Unsupported platform: ${OS}-${ARCH}" && exit 1 ;;
+          esac
+          echo "Downloading ${FILE}..."
+          curl -fsSL "${BASE}/${FILE}" | tar xz
+          DIR="${FILE%.tar.gz}"
+          sudo mv "${DIR}/prady" /usr/local/bin/prady
+          rm -rf "${DIR}"
+          echo "Installed: $(prady version)"
+          SCRIPT
+          chmod +x install.sh
+
+      - name: Create install.ps1 (Windows)
+        run: |
+          cat > install.ps1 << 'SCRIPT'
+          $ErrorActionPreference = "Stop"
+          $VERSION = "${{ steps.version.outputs.tag }}"
+          $BASE = "https://github.com/technopradyumn/prady/releases/download/$VERSION"
+          $FILE = "prady-$VERSION-x86_64-pc-windows-msvc.zip"
+          $URL  = "$BASE/$FILE"
+          $DEST = "$env:TEMP\$FILE"
+          Write-Host "Downloading $FILE..."
+          Invoke-WebRequest -Uri $URL -OutFile $DEST
+          $DIR = "$env:TEMP\prady-install"
+          Expand-Archive -Path $DEST -DestinationPath $DIR -Force
+          $INSTALL = "$env:ProgramFiles\Prady"
+          New-Item -ItemType Directory -Force -Path $INSTALL | Out-Null
+          Copy-Item "$DIR\*\prady.exe" "$INSTALL\prady.exe"
+          $PATH = [Environment]::GetEnvironmentVariable("PATH","Machine")
+          if ($PATH -notlike "*$INSTALL*") {
+              [Environment]::SetEnvironmentVariable("PATH","$PATH;$INSTALL","Machine")
+              Write-Host "Added $INSTALL to PATH. Restart your terminal."
+          }
+          & "$INSTALL\prady.exe" version
+          SCRIPT
+
+      - name: Upload install scripts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            install.sh
+            install.ps1

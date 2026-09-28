@@ -1,0 +1,9 @@
+[package]
+name = "prady-lexer"
+version = "0.1.0"
+edition = "2021"
+authors = ["Prady Team"]
+description = "Lexer and tokenizer for the Prady language"
+
+[dependencies]
+prady-diagnostics = { path = "../prady-diagnostics" }
