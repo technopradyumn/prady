@@ -8,8 +8,14 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
     let mut fields = HashMap::new();
     match name {
         "Map" | "HashMap" => {
-            fields.insert("_keys".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
-            fields.insert("_values".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_keys".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
+            fields.insert(
+                "_values".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "Map".to_string(),
@@ -29,7 +35,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
                 }
             }
             let count = unique.len() as i64;
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(unique))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(unique))),
+            );
             fields.insert("size".to_string(), Value::Int(count));
             Some(Value::Struct {
                 name: "Set".to_string(),
@@ -37,7 +46,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "Stack" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "Stack".to_string(),
@@ -45,7 +57,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "Queue" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "Queue".to_string(),
@@ -53,7 +68,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "Deque" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "Deque".to_string(),
@@ -61,7 +79,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "MinHeap" | "PriorityQueue" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "MinHeap".to_string(),
@@ -69,7 +90,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "MaxHeap" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "MaxHeap".to_string(),
@@ -77,7 +101,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "LinkedList" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "LinkedList".to_string(),
@@ -85,7 +112,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "DoublyLinkedList" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "DoublyLinkedList".to_string(),
@@ -93,7 +123,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "BST" | "BinarySearchTree" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "BinarySearchTree".to_string(),
@@ -101,7 +134,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "AVLTree" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "AVLTree".to_string(),
@@ -109,7 +145,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "RedBlackTree" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "RedBlackTree".to_string(),
@@ -117,7 +156,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "Trie" => {
-            fields.insert("_words".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_words".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "Trie".to_string(),
@@ -125,8 +167,14 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "Graph" => {
-            fields.insert("_vertices".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
-            fields.insert("_edges".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_vertices".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
+            fields.insert(
+                "_edges".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             Some(Value::Struct {
                 name: "Graph".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
@@ -138,8 +186,14 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
                 _ => 10,
             };
             fields.insert("_capacity".to_string(), Value::Int(cap));
-            fields.insert("_keys".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
-            fields.insert("_values".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_keys".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
+            fields.insert(
+                "_values".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "LRUCache".to_string(),
@@ -152,9 +206,18 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
                 _ => 10,
             };
             fields.insert("_capacity".to_string(), Value::Int(cap));
-            fields.insert("_keys".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
-            fields.insert("_values".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
-            fields.insert("_counts".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_keys".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
+            fields.insert(
+                "_values".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
+            fields.insert(
+                "_counts".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "LFUCache".to_string(),
@@ -167,7 +230,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
                 _ => 8,
             };
             fields.insert("_capacity".to_string(), Value::Int(cap));
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             Some(Value::Struct {
                 name: "CircularBuffer".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
@@ -179,7 +245,13 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
                 _ => 64,
             };
             fields.insert("_size".to_string(), Value::Int(size));
-            fields.insert("_bits".to_string(), Value::Array(Rc::new(RefCell::new(vec![Value::Bool(false); size as usize]))));
+            fields.insert(
+                "_bits".to_string(),
+                Value::Array(Rc::new(RefCell::new(vec![
+                    Value::Bool(false);
+                    size as usize
+                ]))),
+            );
             Some(Value::Struct {
                 name: "BloomFilter".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
@@ -192,8 +264,14 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             };
             let parent: Vec<Value> = (0..size).map(|i| Value::Int(i as i64)).collect();
             let rank: Vec<Value> = vec![Value::Int(0); size];
-            fields.insert("_parent".to_string(), Value::Array(Rc::new(RefCell::new(parent))));
-            fields.insert("_rank".to_string(), Value::Array(Rc::new(RefCell::new(rank))));
+            fields.insert(
+                "_parent".to_string(),
+                Value::Array(Rc::new(RefCell::new(parent))),
+            );
+            fields.insert(
+                "_rank".to_string(),
+                Value::Array(Rc::new(RefCell::new(rank))),
+            );
             fields.insert("count".to_string(), Value::Int(size as i64));
             Some(Value::Struct {
                 name: "DisjointSet".to_string(),
@@ -213,14 +291,23 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
                     tree[n + i] = val.clone();
                 }
                 for i in (1..n).rev() {
-                    let left = match &tree[2 * i] { Value::Int(x) => *x, _ => 0 };
-                    let right = match &tree[2 * i + 1] { Value::Int(x) => *x, _ => 0 };
+                    let left = match &tree[2 * i] {
+                        Value::Int(x) => *x,
+                        _ => 0,
+                    };
+                    let right = match &tree[2 * i + 1] {
+                        Value::Int(x) => *x,
+                        _ => 0,
+                    };
                     tree[i] = Value::Int(left + right);
                 }
             }
             let n_leaf = leaf_vals.len() as i64;
             fields.insert("_n".to_string(), Value::Int(n_leaf));
-            fields.insert("_tree".to_string(), Value::Array(Rc::new(RefCell::new(tree))));
+            fields.insert(
+                "_tree".to_string(),
+                Value::Array(Rc::new(RefCell::new(tree))),
+            );
             Some(Value::Struct {
                 name: "SegmentTree".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
@@ -233,7 +320,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             };
             let tree = vec![Value::Int(0); size + 1];
             fields.insert("_size".to_string(), Value::Int(size as i64));
-            fields.insert("_tree".to_string(), Value::Array(Rc::new(RefCell::new(tree))));
+            fields.insert(
+                "_tree".to_string(),
+                Value::Array(Rc::new(RefCell::new(tree))),
+            );
             Some(Value::Struct {
                 name: "FenwickTree".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
@@ -246,14 +336,20 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             };
             let bits = vec![Value::Bool(false); size];
             fields.insert("_size".to_string(), Value::Int(size as i64));
-            fields.insert("_bits".to_string(), Value::Array(Rc::new(RefCell::new(bits))));
+            fields.insert(
+                "_bits".to_string(),
+                Value::Array(Rc::new(RefCell::new(bits))),
+            );
             Some(Value::Struct {
                 name: "BitSet".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
             })
         }
         "SkipList" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "SkipList".to_string(),
@@ -261,34 +357,58 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "Matrix" => {
-            let rows = match args.first() { Some(Value::Int(r)) => *r as usize, _ => 3 };
-            let cols = match args.get(1) { Some(Value::Int(c)) => *c as usize, _ => 3 };
+            let rows = match args.first() {
+                Some(Value::Int(r)) => *r as usize,
+                _ => 3,
+            };
+            let cols = match args.get(1) {
+                Some(Value::Int(c)) => *c as usize,
+                _ => 3,
+            };
             let def = args.get(2).cloned().unwrap_or(Value::Int(0));
             let data: Vec<Value> = (0..rows)
                 .map(|_| Value::Array(Rc::new(RefCell::new(vec![def.clone(); cols]))))
                 .collect();
             fields.insert("_rows".to_string(), Value::Int(rows as i64));
             fields.insert("_cols".to_string(), Value::Int(cols as i64));
-            fields.insert("_data".to_string(), Value::Array(Rc::new(RefCell::new(data))));
+            fields.insert(
+                "_data".to_string(),
+                Value::Array(Rc::new(RefCell::new(data))),
+            );
             Some(Value::Struct {
                 name: "Matrix".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
             })
         }
         "SparseMatrix" => {
-            let rows = match args.first() { Some(Value::Int(r)) => *r, _ => 10 };
-            let cols = match args.get(1) { Some(Value::Int(c)) => *c, _ => 10 };
+            let rows = match args.first() {
+                Some(Value::Int(r)) => *r,
+                _ => 10,
+            };
+            let cols = match args.get(1) {
+                Some(Value::Int(c)) => *c,
+                _ => 10,
+            };
             fields.insert("_rows".to_string(), Value::Int(rows));
             fields.insert("_cols".to_string(), Value::Int(cols));
-            fields.insert("_entries".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_entries".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             Some(Value::Struct {
                 name: "SparseMatrix".to_string(),
                 fields: Rc::new(RefCell::new(fields)),
             })
         }
         "TreeMap" => {
-            fields.insert("_keys".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
-            fields.insert("_values".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_keys".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
+            fields.insert(
+                "_values".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "TreeMap".to_string(),
@@ -296,7 +416,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
             })
         }
         "TreeSet" => {
-            fields.insert("_items".to_string(), Value::Array(Rc::new(RefCell::new(Vec::new()))));
+            fields.insert(
+                "_items".to_string(),
+                Value::Array(Rc::new(RefCell::new(Vec::new()))),
+            );
             fields.insert("size".to_string(), Value::Int(0));
             Some(Value::Struct {
                 name: "TreeSet".to_string(),
@@ -307,7 +430,10 @@ pub fn create_dsa_instance(name: &str, args: Vec<Value>) -> Option<Value> {
     }
 }
 
-pub fn dsa_to_array(struct_name: &str, fields: &Rc<RefCell<HashMap<String, Value>>>) -> Option<Vec<Value>> {
+pub fn dsa_to_array(
+    struct_name: &str,
+    fields: &Rc<RefCell<HashMap<String, Value>>>,
+) -> Option<Vec<Value>> {
     let borrowed = fields.borrow();
     match struct_name {
         "Set" | "HashSet" | "Stack" | "Queue" | "Deque" | "MinHeap" | "MaxHeap" | "LinkedList"
@@ -327,7 +453,10 @@ pub fn dsa_to_array(struct_name: &str, fields: &Rc<RefCell<HashMap<String, Value
                 let mut entries = Vec::new();
                 for i in 0..k_b.len() {
                     let val = v_b.get(i).cloned().unwrap_or(Value::Null);
-                    entries.push(Value::Array(Rc::new(RefCell::new(vec![k_b[i].clone(), val]))));
+                    entries.push(Value::Array(Rc::new(RefCell::new(vec![
+                        k_b[i].clone(),
+                        val,
+                    ]))));
                 }
                 return Some(entries);
             }
@@ -417,14 +546,21 @@ pub fn handle_dsa_method(
                     Ok(Some(Value::Null))
                 }
                 "size" => Ok(Some(Value::Int(keys_arr.borrow().len() as i64))),
-                "keys" => Ok(Some(Value::Array(Rc::new(RefCell::new(keys_arr.borrow().clone()))))),
-                "values" => Ok(Some(Value::Array(Rc::new(RefCell::new(vals_arr.borrow().clone()))))),
+                "keys" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    keys_arr.borrow().clone(),
+                ))))),
+                "values" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    vals_arr.borrow().clone(),
+                ))))),
                 "entries" => {
                     let k_b = keys_arr.borrow();
                     let v_b = vals_arr.borrow();
                     let mut entries = Vec::new();
                     for i in 0..k_b.len() {
-                        entries.push(Value::Array(Rc::new(RefCell::new(vec![k_b[i].clone(), v_b[i].clone()]))));
+                        entries.push(Value::Array(Rc::new(RefCell::new(vec![
+                            k_b[i].clone(),
+                            v_b[i].clone(),
+                        ]))));
                     }
                     Ok(Some(Value::Array(Rc::new(RefCell::new(entries)))))
                 }
@@ -471,12 +607,14 @@ pub fn handle_dsa_method(
                     Ok(Some(Value::Null))
                 }
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
-                "values" | "toArray" => {
-                    Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone())))))
-                }
+                "values" | "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 "union" => {
                     let other_items = match args.first() {
-                        Some(Value::Struct { fields: other_f, .. }) => {
+                        Some(Value::Struct {
+                            fields: other_f, ..
+                        }) => {
                             if let Some(Value::Array(a)) = other_f.borrow().get("_items") {
                                 a.borrow().clone()
                             } else {
@@ -493,14 +631,22 @@ pub fn handle_dsa_method(
                         }
                     }
                     let res_fields = Rc::new(RefCell::new(HashMap::from([
-                        ("_items".to_string(), Value::Array(Rc::new(RefCell::new(combined.clone())))),
+                        (
+                            "_items".to_string(),
+                            Value::Array(Rc::new(RefCell::new(combined.clone()))),
+                        ),
                         ("size".to_string(), Value::Int(combined.len() as i64)),
                     ])));
-                    Ok(Some(Value::Struct { name: "Set".to_string(), fields: res_fields }))
+                    Ok(Some(Value::Struct {
+                        name: "Set".to_string(),
+                        fields: res_fields,
+                    }))
                 }
                 "intersection" => {
                     let other_items = match args.first() {
-                        Some(Value::Struct { fields: other_f, .. }) => {
+                        Some(Value::Struct {
+                            fields: other_f, ..
+                        }) => {
                             if let Some(Value::Array(a)) = other_f.borrow().get("_items") {
                                 a.borrow().clone()
                             } else {
@@ -511,16 +657,28 @@ pub fn handle_dsa_method(
                         _ => Vec::new(),
                     };
                     let current = items_arr.borrow();
-                    let common: Vec<Value> = current.iter().filter(|x| other_items.contains(x)).cloned().collect();
+                    let common: Vec<Value> = current
+                        .iter()
+                        .filter(|x| other_items.contains(x))
+                        .cloned()
+                        .collect();
                     let res_fields = Rc::new(RefCell::new(HashMap::from([
-                        ("_items".to_string(), Value::Array(Rc::new(RefCell::new(common.clone())))),
+                        (
+                            "_items".to_string(),
+                            Value::Array(Rc::new(RefCell::new(common.clone()))),
+                        ),
                         ("size".to_string(), Value::Int(common.len() as i64)),
                     ])));
-                    Ok(Some(Value::Struct { name: "Set".to_string(), fields: res_fields }))
+                    Ok(Some(Value::Struct {
+                        name: "Set".to_string(),
+                        fields: res_fields,
+                    }))
                 }
                 "difference" => {
                     let other_items = match args.first() {
-                        Some(Value::Struct { fields: other_f, .. }) => {
+                        Some(Value::Struct {
+                            fields: other_f, ..
+                        }) => {
                             if let Some(Value::Array(a)) = other_f.borrow().get("_items") {
                                 a.borrow().clone()
                             } else {
@@ -531,12 +689,22 @@ pub fn handle_dsa_method(
                         _ => Vec::new(),
                     };
                     let current = items_arr.borrow();
-                    let diff: Vec<Value> = current.iter().filter(|x| !other_items.contains(x)).cloned().collect();
+                    let diff: Vec<Value> = current
+                        .iter()
+                        .filter(|x| !other_items.contains(x))
+                        .cloned()
+                        .collect();
                     let res_fields = Rc::new(RefCell::new(HashMap::from([
-                        ("_items".to_string(), Value::Array(Rc::new(RefCell::new(diff.clone())))),
+                        (
+                            "_items".to_string(),
+                            Value::Array(Rc::new(RefCell::new(diff.clone()))),
+                        ),
                         ("size".to_string(), Value::Int(diff.len() as i64)),
                     ])));
-                    Ok(Some(Value::Struct { name: "Set".to_string(), fields: res_fields }))
+                    Ok(Some(Value::Struct {
+                        name: "Set".to_string(),
+                        fields: res_fields,
+                    }))
                 }
                 _ => Ok(None),
             }
@@ -554,15 +722,23 @@ pub fn handle_dsa_method(
                     for arg in args {
                         items_arr.borrow_mut().push(arg);
                     }
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(Value::Null))
                 }
                 "pop" => {
                     let val = items_arr.borrow_mut().pop().unwrap_or(Value::Null);
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(val))
                 }
-                "peek" => Ok(Some(items_arr.borrow().last().cloned().unwrap_or(Value::Null))),
+                "peek" => Ok(Some(
+                    items_arr.borrow().last().cloned().unwrap_or(Value::Null),
+                )),
                 "isEmpty" => Ok(Some(Value::Bool(items_arr.borrow().is_empty()))),
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
                 "clear" => {
@@ -570,7 +746,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(0));
                     Ok(Some(Value::Null))
                 }
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
@@ -587,16 +765,25 @@ pub fn handle_dsa_method(
                     for arg in args {
                         items_arr.borrow_mut().push(arg);
                     }
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(Value::Null))
                 }
                 "dequeue" | "pop" => {
                     let mut b = items_arr.borrow_mut();
-                    let val = if b.is_empty() { Value::Null } else { b.remove(0) };
+                    let val = if b.is_empty() {
+                        Value::Null
+                    } else {
+                        b.remove(0)
+                    };
                     f.insert("size".to_string(), Value::Int(b.len() as i64));
                     Ok(Some(val))
                 }
-                "peek" => Ok(Some(items_arr.borrow().first().cloned().unwrap_or(Value::Null))),
+                "peek" => Ok(Some(
+                    items_arr.borrow().first().cloned().unwrap_or(Value::Null),
+                )),
                 "isEmpty" => Ok(Some(Value::Bool(items_arr.borrow().is_empty()))),
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
                 "clear" => {
@@ -604,7 +791,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(0));
                     Ok(Some(Value::Null))
                 }
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
@@ -620,28 +809,45 @@ pub fn handle_dsa_method(
                 "pushFront" => {
                     let val = args.first().cloned().unwrap_or(Value::Null);
                     items_arr.borrow_mut().insert(0, val);
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(Value::Null))
                 }
                 "pushBack" | "push" => {
                     let val = args.first().cloned().unwrap_or(Value::Null);
                     items_arr.borrow_mut().push(val);
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(Value::Null))
                 }
                 "popFront" => {
                     let mut b = items_arr.borrow_mut();
-                    let val = if b.is_empty() { Value::Null } else { b.remove(0) };
+                    let val = if b.is_empty() {
+                        Value::Null
+                    } else {
+                        b.remove(0)
+                    };
                     f.insert("size".to_string(), Value::Int(b.len() as i64));
                     Ok(Some(val))
                 }
                 "popBack" | "pop" => {
                     let val = items_arr.borrow_mut().pop().unwrap_or(Value::Null);
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(val))
                 }
-                "peekFront" => Ok(Some(items_arr.borrow().first().cloned().unwrap_or(Value::Null))),
-                "peekBack" => Ok(Some(items_arr.borrow().last().cloned().unwrap_or(Value::Null))),
+                "peekFront" => Ok(Some(
+                    items_arr.borrow().first().cloned().unwrap_or(Value::Null),
+                )),
+                "peekBack" => Ok(Some(
+                    items_arr.borrow().last().cloned().unwrap_or(Value::Null),
+                )),
                 "isEmpty" => Ok(Some(Value::Bool(items_arr.borrow().is_empty()))),
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
                 "clear" => {
@@ -649,7 +855,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(0));
                     Ok(Some(Value::Null))
                 }
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
@@ -708,7 +916,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(b.len() as i64));
                     Ok(Some(min_val))
                 }
-                "peek" => Ok(Some(items_arr.borrow().first().cloned().unwrap_or(Value::Null))),
+                "peek" => Ok(Some(
+                    items_arr.borrow().first().cloned().unwrap_or(Value::Null),
+                )),
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
                 "isEmpty" => Ok(Some(Value::Bool(items_arr.borrow().is_empty()))),
                 "clear" => {
@@ -716,7 +926,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(0));
                     Ok(Some(Value::Null))
                 }
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
@@ -775,7 +987,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(b.len() as i64));
                     Ok(Some(max_val))
                 }
-                "peek" => Ok(Some(items_arr.borrow().first().cloned().unwrap_or(Value::Null))),
+                "peek" => Ok(Some(
+                    items_arr.borrow().first().cloned().unwrap_or(Value::Null),
+                )),
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
                 "isEmpty" => Ok(Some(Value::Bool(items_arr.borrow().is_empty()))),
                 "clear" => {
@@ -783,7 +997,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(0));
                     Ok(Some(Value::Null))
                 }
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
@@ -799,17 +1015,26 @@ pub fn handle_dsa_method(
                 "append" | "push" => {
                     let val = args.first().cloned().unwrap_or(Value::Null);
                     items_arr.borrow_mut().push(val);
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(Value::Null))
                 }
                 "prepend" => {
                     let val = args.first().cloned().unwrap_or(Value::Null);
                     items_arr.borrow_mut().insert(0, val);
-                    f.insert("size".to_string(), Value::Int(items_arr.borrow().len() as i64));
+                    f.insert(
+                        "size".to_string(),
+                        Value::Int(items_arr.borrow().len() as i64),
+                    );
                     Ok(Some(Value::Null))
                 }
                 "insertAt" => {
-                    let idx = match args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
+                    let idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize,
+                        _ => 0,
+                    };
                     let val = args.get(1).cloned().unwrap_or(Value::Null);
                     let mut b = items_arr.borrow_mut();
                     if idx <= b.len() {
@@ -832,7 +1057,10 @@ pub fn handle_dsa_method(
                     }
                 }
                 "deleteAt" => {
-                    let idx = match args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
+                    let idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize,
+                        _ => 0,
+                    };
                     let mut b = items_arr.borrow_mut();
                     if idx < b.len() {
                         let removed = b.remove(idx);
@@ -843,7 +1071,10 @@ pub fn handle_dsa_method(
                     }
                 }
                 "get" => {
-                    let idx = match args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
+                    let idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize,
+                        _ => 0,
+                    };
                     let b = items_arr.borrow();
                     Ok(Some(b.get(idx).cloned().unwrap_or(Value::Null)))
                 }
@@ -862,7 +1093,9 @@ pub fn handle_dsa_method(
                     f.insert("size".to_string(), Value::Int(0));
                     Ok(Some(Value::Null))
                 }
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
@@ -900,14 +1133,18 @@ pub fn handle_dsa_method(
                         Ok(Some(Value::Bool(false)))
                     }
                 }
-                "min" => Ok(Some(items_arr.borrow().first().cloned().unwrap_or(Value::Null))),
-                "max" => Ok(Some(items_arr.borrow().last().cloned().unwrap_or(Value::Null))),
-                "inorder" | "toArray" => {
-                    Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone())))))
-                }
-                "preorder" => {
-                    Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone())))))
-                }
+                "min" => Ok(Some(
+                    items_arr.borrow().first().cloned().unwrap_or(Value::Null),
+                )),
+                "max" => Ok(Some(
+                    items_arr.borrow().last().cloned().unwrap_or(Value::Null),
+                )),
+                "inorder" | "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
+                "preorder" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 "postorder" => {
                     let mut rev = items_arr.borrow().clone();
                     rev.reverse();
@@ -915,7 +1152,11 @@ pub fn handle_dsa_method(
                 }
                 "height" => {
                     let n = items_arr.borrow().len();
-                    let h = if n == 0 { 0 } else { (n as f64).log2().floor() as i64 + 1 };
+                    let h = if n == 0 {
+                        0
+                    } else {
+                        (n as f64).log2().floor() as i64 + 1
+                    };
                     Ok(Some(Value::Int(h)))
                 }
                 "isBalanced" => Ok(Some(Value::Bool(true))),
@@ -944,7 +1185,10 @@ pub fn handle_dsa_method(
                         None => String::new(),
                     };
                     let mut b = words_arr.borrow_mut();
-                    if !b.iter().any(|w| match w { Value::String(s) => s == &word, _ => false }) {
+                    if !b.iter().any(|w| match w {
+                        Value::String(s) => s == &word,
+                        _ => false,
+                    }) {
                         b.push(Value::String(word));
                         f.insert("size".to_string(), Value::Int(b.len() as i64));
                     }
@@ -957,7 +1201,10 @@ pub fn handle_dsa_method(
                         None => String::new(),
                     };
                     let b = words_arr.borrow();
-                    let found = b.iter().any(|w| match w { Value::String(s) => s == &word, _ => false });
+                    let found = b.iter().any(|w| match w {
+                        Value::String(s) => s == &word,
+                        _ => false,
+                    });
                     Ok(Some(Value::Bool(found)))
                 }
                 "startsWith" => {
@@ -967,7 +1214,10 @@ pub fn handle_dsa_method(
                         None => String::new(),
                     };
                     let b = words_arr.borrow();
-                    let found = b.iter().any(|w| match w { Value::String(s) => s.starts_with(&prefix), _ => false });
+                    let found = b.iter().any(|w| match w {
+                        Value::String(s) => s.starts_with(&prefix),
+                        _ => false,
+                    });
                     Ok(Some(Value::Bool(found)))
                 }
                 "wordsWithPrefix" => {
@@ -977,7 +1227,14 @@ pub fn handle_dsa_method(
                         None => String::new(),
                     };
                     let b = words_arr.borrow();
-                    let matches: Vec<Value> = b.iter().filter(|w| match w { Value::String(s) => s.starts_with(&prefix), _ => false }).cloned().collect();
+                    let matches: Vec<Value> = b
+                        .iter()
+                        .filter(|w| match w {
+                            Value::String(s) => s.starts_with(&prefix),
+                            _ => false,
+                        })
+                        .cloned()
+                        .collect();
                     Ok(Some(Value::Array(Rc::new(RefCell::new(matches)))))
                 }
                 "delete" => {
@@ -987,7 +1244,10 @@ pub fn handle_dsa_method(
                         None => String::new(),
                     };
                     let mut b = words_arr.borrow_mut();
-                    if let Some(pos) = b.iter().position(|w| match w { Value::String(s) => s == &word, _ => false }) {
+                    if let Some(pos) = b.iter().position(|w| match w {
+                        Value::String(s) => s == &word,
+                        _ => false,
+                    }) {
                         b.remove(pos);
                         f.insert("size".to_string(), Value::Int(b.len() as i64));
                         Ok(Some(Value::Bool(true)))
@@ -1007,8 +1267,14 @@ pub fn handle_dsa_method(
 
         "Graph" => {
             let f = fields.borrow();
-            let v_arr = match f.get("_vertices") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
-            let e_arr = match f.get("_edges") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let v_arr = match f.get("_vertices") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
+            let e_arr = match f.get("_edges") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "addVertex" => {
@@ -1025,8 +1291,12 @@ pub fn handle_dsa_method(
                     let weight = args.get(2).cloned().unwrap_or(Value::Int(1));
                     {
                         let mut vb = v_arr.borrow_mut();
-                        if !vb.contains(&u) { vb.push(u.clone()); }
-                        if !vb.contains(&v) { vb.push(v.clone()); }
+                        if !vb.contains(&u) {
+                            vb.push(u.clone());
+                        }
+                        if !vb.contains(&v) {
+                            vb.push(v.clone());
+                        }
                     }
                     let edge = Value::Array(Rc::new(RefCell::new(vec![u, v, weight])));
                     e_arr.borrow_mut().push(edge);
@@ -1050,7 +1320,9 @@ pub fn handle_dsa_method(
                     });
                     Ok(Some(Value::Bool(has)))
                 }
-                "getVertices" => Ok(Some(Value::Array(Rc::new(RefCell::new(v_arr.borrow().clone()))))),
+                "getVertices" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    v_arr.borrow().clone(),
+                ))))),
                 "getNeighbors" => {
                     let u = args.first().cloned().unwrap_or(Value::Null);
                     let eb = e_arr.borrow();
@@ -1105,9 +1377,9 @@ pub fn handle_dsa_method(
                     }
                     Ok(Some(Value::Array(Rc::new(RefCell::new(visited)))))
                 }
-                "topologicalSort" => {
-                    Ok(Some(Value::Array(Rc::new(RefCell::new(v_arr.borrow().clone())))))
-                }
+                "topologicalSort" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    v_arr.borrow().clone(),
+                ))))),
                 "hasCycle" => Ok(Some(Value::Bool(false))),
                 _ => Ok(None),
             }
@@ -1115,9 +1387,18 @@ pub fn handle_dsa_method(
 
         "LRUCache" => {
             let mut f = fields.borrow_mut();
-            let cap = match f.get("_capacity") { Some(Value::Int(c)) => *c as usize, _ => 10 };
-            let keys_arr = match f.get("_keys") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
-            let vals_arr = match f.get("_values") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let cap = match f.get("_capacity") {
+                Some(Value::Int(c)) => *c as usize,
+                _ => 10,
+            };
+            let keys_arr = match f.get("_keys") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
+            let vals_arr = match f.get("_values") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "put" => {
@@ -1169,10 +1450,22 @@ pub fn handle_dsa_method(
 
         "LFUCache" => {
             let mut f = fields.borrow_mut();
-            let cap = match f.get("_capacity") { Some(Value::Int(c)) => *c as usize, _ => 10 };
-            let keys_arr = match f.get("_keys") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
-            let vals_arr = match f.get("_values") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
-            let counts_arr = match f.get("_counts") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let cap = match f.get("_capacity") {
+                Some(Value::Int(c)) => *c as usize,
+                _ => 10,
+            };
+            let keys_arr = match f.get("_keys") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
+            let vals_arr = match f.get("_values") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
+            let counts_arr = match f.get("_counts") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "put" => {
@@ -1183,14 +1476,19 @@ pub fn handle_dsa_method(
                     let mut cb = counts_arr.borrow_mut();
                     if let Some(pos) = kb.iter().position(|k| k == &key) {
                         vb[pos] = val;
-                        if let Value::Int(cnt) = cb[pos] { cb[pos] = Value::Int(cnt + 1); }
+                        if let Value::Int(cnt) = cb[pos] {
+                            cb[pos] = Value::Int(cnt + 1);
+                        }
                     } else {
                         if kb.len() >= cap && !kb.is_empty() {
                             let mut min_idx = 0;
                             let mut min_count = i64::MAX;
                             for (i, c) in cb.iter().enumerate() {
                                 if let Value::Int(n) = c {
-                                    if *n < min_count { min_count = *n; min_idx = i; }
+                                    if *n < min_count {
+                                        min_count = *n;
+                                        min_idx = i;
+                                    }
                                 }
                             }
                             kb.remove(min_idx);
@@ -1210,7 +1508,9 @@ pub fn handle_dsa_method(
                     let vb = vals_arr.borrow();
                     let mut cb = counts_arr.borrow_mut();
                     if let Some(pos) = kb.iter().position(|k| k == &key) {
-                        if let Value::Int(cnt) = cb[pos] { cb[pos] = Value::Int(cnt + 1); }
+                        if let Value::Int(cnt) = cb[pos] {
+                            cb[pos] = Value::Int(cnt + 1);
+                        }
                         Ok(Some(vb[pos].clone()))
                     } else {
                         Ok(Some(Value::Null))
@@ -1230,8 +1530,14 @@ pub fn handle_dsa_method(
 
         "CircularBuffer" => {
             let f = fields.borrow();
-            let cap = match f.get("_capacity") { Some(Value::Int(c)) => *c as usize, _ => 8 };
-            let items_arr = match f.get("_items") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let cap = match f.get("_capacity") {
+                Some(Value::Int(c)) => *c as usize,
+                _ => 8,
+            };
+            let items_arr = match f.get("_items") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "push" => {
@@ -1245,9 +1551,15 @@ pub fn handle_dsa_method(
                 }
                 "pop" => {
                     let mut b = items_arr.borrow_mut();
-                    Ok(Some(if b.is_empty() { Value::Null } else { b.remove(0) }))
+                    Ok(Some(if b.is_empty() {
+                        Value::Null
+                    } else {
+                        b.remove(0)
+                    }))
                 }
-                "peek" => Ok(Some(items_arr.borrow().first().cloned().unwrap_or(Value::Null))),
+                "peek" => Ok(Some(
+                    items_arr.borrow().first().cloned().unwrap_or(Value::Null),
+                )),
                 "isFull" => Ok(Some(Value::Bool(items_arr.borrow().len() >= cap))),
                 "isEmpty" => Ok(Some(Value::Bool(items_arr.borrow().is_empty()))),
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
@@ -1256,19 +1568,30 @@ pub fn handle_dsa_method(
                     items_arr.borrow_mut().clear();
                     Ok(Some(Value::Null))
                 }
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
 
         "BloomFilter" => {
             let f = fields.borrow();
-            let size = match f.get("_size") { Some(Value::Int(s)) => *s as usize, _ => 64 };
-            let bits_arr = match f.get("_bits") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let size = match f.get("_size") {
+                Some(Value::Int(s)) => *s as usize,
+                _ => 64,
+            };
+            let bits_arr = match f.get("_bits") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "add" => {
-                    let item_str = args.first().map(|v| v.to_display_string()).unwrap_or_default();
+                    let item_str = args
+                        .first()
+                        .map(|v| v.to_display_string())
+                        .unwrap_or_default();
                     let hash1 = simple_hash(&item_str, 17) % size;
                     let hash2 = simple_hash(&item_str, 31) % size;
                     let mut b = bits_arr.borrow_mut();
@@ -1277,7 +1600,10 @@ pub fn handle_dsa_method(
                     Ok(Some(Value::Null))
                 }
                 "mightContain" => {
-                    let item_str = args.first().map(|v| v.to_display_string()).unwrap_or_default();
+                    let item_str = args
+                        .first()
+                        .map(|v| v.to_display_string())
+                        .unwrap_or_default();
                     let hash1 = simple_hash(&item_str, 17) % size;
                     let hash2 = simple_hash(&item_str, 31) % size;
                     let b = bits_arr.borrow();
@@ -1286,7 +1612,9 @@ pub fn handle_dsa_method(
                 }
                 "clear" => {
                     let mut b = bits_arr.borrow_mut();
-                    for x in b.iter_mut() { *x = Value::Bool(false); }
+                    for x in b.iter_mut() {
+                        *x = Value::Bool(false);
+                    }
                     Ok(Some(Value::Null))
                 }
                 _ => Ok(None),
@@ -1295,26 +1623,47 @@ pub fn handle_dsa_method(
 
         "DisjointSet" => {
             let mut f = fields.borrow_mut();
-            let parent_arr = match f.get("_parent") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
-            let rank_arr = match f.get("_rank") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let parent_arr = match f.get("_parent") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
+            let rank_arr = match f.get("_rank") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "find" => {
-                    let i = match args.first() { Some(Value::Int(x)) => *x as usize, _ => 0 };
+                    let i = match args.first() {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
                     let mut p_b = parent_arr.borrow_mut();
                     let root = dsu_find(&mut p_b, i);
                     Ok(Some(Value::Int(root as i64)))
                 }
                 "union" => {
-                    let i = match args.first() { Some(Value::Int(x)) => *x as usize, _ => 0 };
-                    let j = match args.get(1) { Some(Value::Int(x)) => *x as usize, _ => 0 };
+                    let i = match args.first() {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
+                    let j = match args.get(1) {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
                     let mut p_b = parent_arr.borrow_mut();
                     let mut r_b = rank_arr.borrow_mut();
                     let root_i = dsu_find(&mut p_b, i);
                     let root_j = dsu_find(&mut p_b, j);
                     if root_i != root_j {
-                        let rank_i = match r_b[root_i] { Value::Int(r) => r, _ => 0 };
-                        let rank_j = match r_b[root_j] { Value::Int(r) => r, _ => 0 };
+                        let rank_i = match r_b[root_i] {
+                            Value::Int(r) => r,
+                            _ => 0,
+                        };
+                        let rank_j = match r_b[root_j] {
+                            Value::Int(r) => r,
+                            _ => 0,
+                        };
                         if rank_i < rank_j {
                             p_b[root_i] = Value::Int(root_j as i64);
                         } else if rank_i > rank_j {
@@ -1336,8 +1685,14 @@ pub fn handle_dsa_method(
                     }
                 }
                 "connected" => {
-                    let i = match args.first() { Some(Value::Int(x)) => *x as usize, _ => 0 };
-                    let j = match args.get(1) { Some(Value::Int(x)) => *x as usize, _ => 0 };
+                    let i = match args.first() {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
+                    let j = match args.get(1) {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
                     let mut p_b = parent_arr.borrow_mut();
                     let root_i = dsu_find(&mut p_b, i);
                     let root_j = dsu_find(&mut p_b, j);
@@ -1350,39 +1705,69 @@ pub fn handle_dsa_method(
 
         "SegmentTree" => {
             let f = fields.borrow();
-            let n = match f.get("_n") { Some(Value::Int(x)) => *x as usize, _ => 0 };
-            let tree_arr = match f.get("_tree") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let n = match f.get("_n") {
+                Some(Value::Int(x)) => *x as usize,
+                _ => 0,
+            };
+            let tree_arr = match f.get("_tree") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "update" => {
-                    let idx = match args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
-                    let val = match args.get(1) { Some(Value::Int(v)) => *v, _ => 0 };
+                    let idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize,
+                        _ => 0,
+                    };
+                    let val = match args.get(1) {
+                        Some(Value::Int(v)) => *v,
+                        _ => 0,
+                    };
                     let mut tb = tree_arr.borrow_mut();
                     if idx < n {
                         let mut pos = n + idx;
                         tb[pos] = Value::Int(val);
                         while pos > 1 {
                             pos /= 2;
-                            let left = match tb[2 * pos] { Value::Int(x) => x, _ => 0 };
-                            let right = match tb[2 * pos + 1] { Value::Int(x) => x, _ => 0 };
+                            let left = match tb[2 * pos] {
+                                Value::Int(x) => x,
+                                _ => 0,
+                            };
+                            let right = match tb[2 * pos + 1] {
+                                Value::Int(x) => x,
+                                _ => 0,
+                            };
                             tb[pos] = Value::Int(left + right);
                         }
                     }
                     Ok(Some(Value::Null))
                 }
                 "query" => {
-                    let mut l = match args.first() { Some(Value::Int(i)) => *i as usize + n, _ => n };
-                    let mut r = match args.get(1) { Some(Value::Int(i)) => *i as usize + n + 1, _ => 2 * n };
+                    let mut l = match args.first() {
+                        Some(Value::Int(i)) => *i as usize + n,
+                        _ => n,
+                    };
+                    let mut r = match args.get(1) {
+                        Some(Value::Int(i)) => *i as usize + n + 1,
+                        _ => 2 * n,
+                    };
                     let tb = tree_arr.borrow();
                     let mut sum = 0;
                     while l < r {
                         if l % 2 == 1 {
-                            sum += match tb[l] { Value::Int(x) => x, _ => 0 };
+                            sum += match tb[l] {
+                                Value::Int(x) => x,
+                                _ => 0,
+                            };
                             l += 1;
                         }
                         if r % 2 == 1 {
                             r -= 1;
-                            sum += match tb[r] { Value::Int(x) => x, _ => 0 };
+                            sum += match tb[r] {
+                                Value::Int(x) => x,
+                                _ => 0,
+                            };
                         }
                         l /= 2;
                         r /= 2;
@@ -1395,48 +1780,89 @@ pub fn handle_dsa_method(
 
         "FenwickTree" => {
             let f = fields.borrow();
-            let size = match f.get("_size") { Some(Value::Int(s)) => *s as usize, _ => 16 };
-            let tree_arr = match f.get("_tree") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let size = match f.get("_size") {
+                Some(Value::Int(s)) => *s as usize,
+                _ => 16,
+            };
+            let tree_arr = match f.get("_tree") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "update" => {
-                    let mut idx = match args.first() { Some(Value::Int(i)) => *i as usize + 1, _ => 1 };
-                    let delta = match args.get(1) { Some(Value::Int(d)) => *d, _ => 0 };
+                    let mut idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize + 1,
+                        _ => 1,
+                    };
+                    let delta = match args.get(1) {
+                        Some(Value::Int(d)) => *d,
+                        _ => 0,
+                    };
                     let mut tb = tree_arr.borrow_mut();
                     while idx <= size {
-                        let curr = match tb[idx] { Value::Int(x) => x, _ => 0 };
+                        let curr = match tb[idx] {
+                            Value::Int(x) => x,
+                            _ => 0,
+                        };
                         tb[idx] = Value::Int(curr + delta);
                         idx += idx & (!idx + 1);
                     }
                     Ok(Some(Value::Null))
                 }
                 "query" => {
-                    let mut idx = match args.first() { Some(Value::Int(i)) => *i as usize + 1, _ => 0 };
+                    let mut idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize + 1,
+                        _ => 0,
+                    };
                     let tb = tree_arr.borrow();
                     let mut sum = 0;
                     while idx > 0 {
-                        sum += match tb[idx] { Value::Int(x) => x, _ => 0 };
+                        sum += match tb[idx] {
+                            Value::Int(x) => x,
+                            _ => 0,
+                        };
                         idx -= idx & (!idx + 1);
                     }
                     Ok(Some(Value::Int(sum)))
                 }
                 "queryRange" => {
-                    let l = match args.first() { Some(Value::Int(i)) => *i, _ => 0 };
-                    let r = match args.get(1) { Some(Value::Int(i)) => *i, _ => 0 };
+                    let l = match args.first() {
+                        Some(Value::Int(i)) => *i,
+                        _ => 0,
+                    };
+                    let r = match args.get(1) {
+                        Some(Value::Int(i)) => *i,
+                        _ => 0,
+                    };
                     let q_r = {
                         let mut idx = (r + 1) as usize;
                         let tb = tree_arr.borrow();
                         let mut s = 0;
-                        while idx > 0 { s += match tb[idx] { Value::Int(x) => x, _ => 0 }; idx -= idx & (!idx + 1); }
+                        while idx > 0 {
+                            s += match tb[idx] {
+                                Value::Int(x) => x,
+                                _ => 0,
+                            };
+                            idx -= idx & (!idx + 1);
+                        }
                         s
                     };
                     let q_l = if l > 0 {
                         let mut idx = l as usize;
                         let tb = tree_arr.borrow();
                         let mut s = 0;
-                        while idx > 0 { s += match tb[idx] { Value::Int(x) => x, _ => 0 }; idx -= idx & (!idx + 1); }
+                        while idx > 0 {
+                            s += match tb[idx] {
+                                Value::Int(x) => x,
+                                _ => 0,
+                            };
+                            idx -= idx & (!idx + 1);
+                        }
                         s
-                    } else { 0 };
+                    } else {
+                        0
+                    };
                     Ok(Some(Value::Int(q_r - q_l)))
                 }
                 _ => Ok(None),
@@ -1445,33 +1871,54 @@ pub fn handle_dsa_method(
 
         "BitSet" => {
             let f = fields.borrow();
-            let size = match f.get("_size") { Some(Value::Int(s)) => *s as usize, _ => 64 };
-            let bits_arr = match f.get("_bits") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let size = match f.get("_size") {
+                Some(Value::Int(s)) => *s as usize,
+                _ => 64,
+            };
+            let bits_arr = match f.get("_bits") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "set" => {
-                    let idx = match args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
+                    let idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize,
+                        _ => 0,
+                    };
                     let mut b = bits_arr.borrow_mut();
-                    if idx < size { b[idx] = Value::Bool(true); }
+                    if idx < size {
+                        b[idx] = Value::Bool(true);
+                    }
                     Ok(Some(Value::Null))
                 }
                 "clear" => {
                     if let Some(Value::Int(idx)) = args.first() {
                         let mut b = bits_arr.borrow_mut();
-                        if (*idx as usize) < size { b[*idx as usize] = Value::Bool(false); }
+                        if (*idx as usize) < size {
+                            b[*idx as usize] = Value::Bool(false);
+                        }
                     } else {
                         let mut b = bits_arr.borrow_mut();
-                        for x in b.iter_mut() { *x = Value::Bool(false); }
+                        for x in b.iter_mut() {
+                            *x = Value::Bool(false);
+                        }
                     }
                     Ok(Some(Value::Null))
                 }
                 "get" => {
-                    let idx = match args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
+                    let idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize,
+                        _ => 0,
+                    };
                     let b = bits_arr.borrow();
                     Ok(Some(b.get(idx).cloned().unwrap_or(Value::Bool(false))))
                 }
                 "toggle" => {
-                    let idx = match args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
+                    let idx = match args.first() {
+                        Some(Value::Int(i)) => *i as usize,
+                        _ => 0,
+                    };
                     let mut b = bits_arr.borrow_mut();
                     if idx < size {
                         let cur = b[idx] == Value::Bool(true);
@@ -1485,16 +1932,25 @@ pub fn handle_dsa_method(
                     Ok(Some(Value::Int(cnt as i64)))
                 }
                 "size" => Ok(Some(Value::Int(size as i64))),
-                "all" => Ok(Some(Value::Bool(bits_arr.borrow().iter().all(|x| *x == Value::Bool(true))))),
-                "any" => Ok(Some(Value::Bool(bits_arr.borrow().contains(&Value::Bool(true))))),
-                "none" => Ok(Some(Value::Bool(bits_arr.borrow().iter().all(|x| *x == Value::Bool(false))))),
+                "all" => Ok(Some(Value::Bool(
+                    bits_arr.borrow().iter().all(|x| *x == Value::Bool(true)),
+                ))),
+                "any" => Ok(Some(Value::Bool(
+                    bits_arr.borrow().contains(&Value::Bool(true)),
+                ))),
+                "none" => Ok(Some(Value::Bool(
+                    bits_arr.borrow().iter().all(|x| *x == Value::Bool(false)),
+                ))),
                 _ => Ok(None),
             }
         }
 
         "SkipList" => {
             let mut f = fields.borrow_mut();
-            let items_arr = match f.get("_items") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let items_arr = match f.get("_items") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "insert" => {
@@ -1521,55 +1977,93 @@ pub fn handle_dsa_method(
                     }
                 }
                 "size" => Ok(Some(Value::Int(items_arr.borrow().len() as i64))),
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(items_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    items_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
 
         "Matrix" => {
             let f = fields.borrow();
-            let rows = match f.get("_rows") { Some(Value::Int(r)) => *r as usize, _ => 0 };
-            let cols = match f.get("_cols") { Some(Value::Int(c)) => *c as usize, _ => 0 };
-            let data_arr = match f.get("_data") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let rows = match f.get("_rows") {
+                Some(Value::Int(r)) => *r as usize,
+                _ => 0,
+            };
+            let cols = match f.get("_cols") {
+                Some(Value::Int(c)) => *c as usize,
+                _ => 0,
+            };
+            let data_arr = match f.get("_data") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "get" => {
-                    let r = match args.first() { Some(Value::Int(x)) => *x as usize, _ => 0 };
-                    let c = match args.get(1) { Some(Value::Int(x)) => *x as usize, _ => 0 };
+                    let r = match args.first() {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
+                    let c = match args.get(1) {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
                     let d = data_arr.borrow();
                     if r < d.len() {
                         if let Value::Array(row_arr) = &d[r] {
                             let row = row_arr.borrow();
-                            if c < row.len() { return Ok(Some(row[c].clone())); }
+                            if c < row.len() {
+                                return Ok(Some(row[c].clone()));
+                            }
                         }
                     }
                     Ok(Some(Value::Null))
                 }
                 "set" => {
-                    let r = match args.first() { Some(Value::Int(x)) => *x as usize, _ => 0 };
-                    let c = match args.get(1) { Some(Value::Int(x)) => *x as usize, _ => 0 };
+                    let r = match args.first() {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
+                    let c = match args.get(1) {
+                        Some(Value::Int(x)) => *x as usize,
+                        _ => 0,
+                    };
                     let val = args.get(2).cloned().unwrap_or(Value::Null);
                     let d = data_arr.borrow();
                     if r < d.len() {
                         if let Value::Array(row_arr) = &d[r] {
                             let mut row = row_arr.borrow_mut();
-                            if c < row.len() { row[c] = val; }
+                            if c < row.len() {
+                                row[c] = val;
+                            }
                         }
                     }
                     Ok(Some(Value::Null))
                 }
                 "rows" => Ok(Some(Value::Int(rows as i64))),
                 "cols" => Ok(Some(Value::Int(cols as i64))),
-                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(data_arr.borrow().clone()))))),
+                "toArray" => Ok(Some(Value::Array(Rc::new(RefCell::new(
+                    data_arr.borrow().clone(),
+                ))))),
                 _ => Ok(None),
             }
         }
 
         "SparseMatrix" => {
             let f = fields.borrow();
-            let rows = match f.get("_rows") { Some(Value::Int(r)) => *r, _ => 10 };
-            let cols = match f.get("_cols") { Some(Value::Int(c)) => *c, _ => 10 };
-            let entries = match f.get("_entries") { Some(Value::Array(a)) => Rc::clone(a), _ => return Ok(None) };
+            let rows = match f.get("_rows") {
+                Some(Value::Int(r)) => *r,
+                _ => 10,
+            };
+            let cols = match f.get("_cols") {
+                Some(Value::Int(c)) => *c,
+                _ => 10,
+            };
+            let entries = match f.get("_entries") {
+                Some(Value::Array(a)) => Rc::clone(a),
+                _ => return Ok(None),
+            };
 
             match method {
                 "set" => {
@@ -1578,7 +2072,12 @@ pub fn handle_dsa_method(
                     let val = args.get(2).cloned().unwrap_or(Value::Int(0));
                     let mut eb = entries.borrow_mut();
                     let pos = eb.iter().position(|e| {
-                        if let Value::Array(a) = e { let b = a.borrow(); b.len() >= 2 && b[0] == r && b[1] == c } else { false }
+                        if let Value::Array(a) = e {
+                            let b = a.borrow();
+                            b.len() >= 2 && b[0] == r && b[1] == c
+                        } else {
+                            false
+                        }
                     });
                     if let Some(idx) = pos {
                         eb[idx] = Value::Array(Rc::new(RefCell::new(vec![r, c, val])));
@@ -1594,7 +2093,9 @@ pub fn handle_dsa_method(
                     for e in eb.iter() {
                         if let Value::Array(a) = e {
                             let b = a.borrow();
-                            if b.len() >= 3 && b[0] == r && b[1] == c { return Ok(Some(b[2].clone())); }
+                            if b.len() >= 3 && b[0] == r && b[1] == c {
+                                return Ok(Some(b[2].clone()));
+                            }
                         }
                     }
                     Ok(Some(Value::Int(0)))

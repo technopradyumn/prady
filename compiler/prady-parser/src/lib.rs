@@ -371,13 +371,19 @@ impl<'a> Parser<'a> {
                 let is_mut = !is_const && self.match_token(&TokenKind::Mut);
                 let f_name = match self.expect_ident("Expected field name after 'let'/'const'") {
                     Some(n) => n,
-                    None => { self.synchronize(); continue; }
+                    None => {
+                        self.synchronize();
+                        continue;
+                    }
                 };
                 // Require type annotation
                 let f_ty = if self.match_token(&TokenKind::Colon) {
                     match self.parse_type() {
                         Some(t) => t,
-                        None => { self.synchronize(); continue; }
+                        None => {
+                            self.synchronize();
+                            continue;
+                        }
                     }
                 } else {
                     // No type annotation provided — emit error and skip
@@ -393,7 +399,10 @@ impl<'a> Parser<'a> {
                 let default_init = if self.match_token(&TokenKind::Assign) {
                     match self.parse_expr() {
                         Some(e) => Some(e),
-                        None => { self.synchronize(); continue; }
+                        None => {
+                            self.synchronize();
+                            continue;
+                        }
                     }
                 } else {
                     None
@@ -742,7 +751,10 @@ impl<'a> Parser<'a> {
             None
         };
 
-        let end_tok = self.expect(TokenKind::Semicolon, "Expected ';' after let/const statement")?;
+        let end_tok = self.expect(
+            TokenKind::Semicolon,
+            "Expected ';' after let/const statement",
+        )?;
         let span = start_span.merge(end_tok.span);
 
         Some(Stmt::Let(LetStmt {

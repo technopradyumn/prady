@@ -112,7 +112,10 @@ fn main() -> ExitCode {
         }
         "add" => {
             if args.len() < 3 {
-                eprintln!("{}: Missing package name for 'add'", style::red_bold("error"));
+                eprintln!(
+                    "{}: Missing package name for 'add'",
+                    style::red_bold("error")
+                );
                 eprintln!("Usage: prady add <package>");
                 return ExitCode::FAILURE;
             }
@@ -274,12 +277,7 @@ fn run_file(file: &Path) -> ExitCode {
             eprintln!("{}: {}", style::red_bold("runtime error"), err.message);
             if let Some(span) = err.span {
                 let (line, col) = project.main_source.get_location(span.start);
-                eprintln!(
-                    "  --> {}:{}:{}",
-                    file.display(),
-                    line,
-                    col
-                );
+                eprintln!("  --> {}:{}:{}", file.display(), line, col);
             }
             ExitCode::FAILURE
         }
@@ -569,7 +567,11 @@ fn run_add(pkg: &str) -> ExitCode {
             }
         }
     }
-    println!("{} Added '{}' (v1.0.0) successfully!", style::green_bold("success:"), pkg);
+    println!(
+        "{} Added '{}' (v1.0.0) successfully!",
+        style::green_bold("success:"),
+        pkg
+    );
     ExitCode::SUCCESS
 }
 

@@ -17,9 +17,11 @@ pub fn load_program_and_modules(entry_file: &Path) -> Result<LoadedProject, Stri
         return Err(format!("File '{}' not found.", entry_file.display()));
     }
 
-    let canonical_entry = fs::canonicalize(entry_file)
-        .unwrap_or_else(|_| entry_file.to_path_buf());
-    let entry_dir = canonical_entry.parent().unwrap_or(Path::new(".")).to_path_buf();
+    let canonical_entry = fs::canonicalize(entry_file).unwrap_or_else(|_| entry_file.to_path_buf());
+    let entry_dir = canonical_entry
+        .parent()
+        .unwrap_or(Path::new("."))
+        .to_path_buf();
 
     // 1. Read and parse entry file
     let entry_content = fs::read_to_string(&canonical_entry)
@@ -114,7 +116,12 @@ pub fn load_program_and_modules(entry_file: &Path) -> Result<LoadedProject, Stri
     })
 }
 
-fn collect_pr_files(dir: &Path, list: &mut Vec<PathBuf>, visited: &HashSet<PathBuf>, max_depth: usize) {
+fn collect_pr_files(
+    dir: &Path,
+    list: &mut Vec<PathBuf>,
+    visited: &HashSet<PathBuf>,
+    max_depth: usize,
+) {
     if max_depth == 0 || !dir.is_dir() {
         return;
     }
@@ -151,7 +158,12 @@ fn find_project_root(start_dir: &Path) -> Option<PathBuf> {
     None
 }
 
-fn resolve_import(base_dir: &Path, path_idents: &[prady_ast::Ident], list: &mut Vec<PathBuf>, visited: &HashSet<PathBuf>) {
+fn resolve_import(
+    base_dir: &Path,
+    path_idents: &[prady_ast::Ident],
+    list: &mut Vec<PathBuf>,
+    visited: &HashSet<PathBuf>,
+) {
     if path_idents.is_empty() {
         return;
     }

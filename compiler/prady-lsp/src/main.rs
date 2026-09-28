@@ -8,10 +8,10 @@
 //!   - Document symbols (outline view / breadcrumbs)
 //!   - Completion (keywords + declared symbols)
 
+use prady_ast::{Item, Stmt};
 use prady_diagnostics::{DiagnosticBag, SourceFile};
 use prady_lexer::Lexer;
 use prady_parser::Parser;
-use prady_ast::{Item, Stmt};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -48,7 +48,7 @@ fn send_notification(method: &str, params: Value) {
 #[derive(Debug, Clone)]
 struct SymbolDef {
     name: String,
-    kind: u32,          // LSP SymbolKind
+    kind: u32, // LSP SymbolKind
     detail: String,
     line: u32,
     character: u32,
@@ -112,7 +112,9 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                 let (el, ec) = lsp_pos(&source, f.span.end);
                 let mut sig = format!("fn {}(", f.name.name);
                 for (i, p) in f.params.iter().enumerate() {
-                    if i > 0 { sig.push_str(", "); }
+                    if i > 0 {
+                        sig.push_str(", ");
+                    }
                     sig.push_str(&format!("{}: {:?}", p.name.name, p.ty));
                 }
                 sig.push(')');
@@ -123,8 +125,10 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                     name: f.name.name.clone(),
                     kind: 12, // Function
                     detail: sig,
-                    line: sl, character: sc,
-                    end_line: el, end_char: ec,
+                    line: sl,
+                    character: sc,
+                    end_line: el,
+                    end_char: ec,
                     uri: uri.to_string(),
                 });
 
@@ -138,8 +142,10 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                     name: c.name.name.clone(),
                     kind: 5, // Class
                     detail: format!("class {}", c.name.name),
-                    line: sl, character: sc,
-                    end_line: el, end_char: ec,
+                    line: sl,
+                    character: sc,
+                    end_line: el,
+                    end_char: ec,
                     uri: uri.to_string(),
                 });
                 for field in &c.fields {
@@ -148,8 +154,10 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                         name: field.name.name.clone(),
                         kind: 8, // Field
                         detail: format!("{}: {:?}", field.name.name, field.ty),
-                        line: fl, character: fc,
-                        end_line: fl, end_char: fc + field.name.name.len() as u32,
+                        line: fl,
+                        character: fc,
+                        end_line: fl,
+                        end_char: fc + field.name.name.len() as u32,
                         uri: uri.to_string(),
                     });
                 }
@@ -160,8 +168,10 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                         name: method.name.name.clone(),
                         kind: 6, // Method
                         detail: format!("fn {} (in class {})", method.name.name, c.name.name),
-                        line: ml, character: mc,
-                        end_line: mel, end_char: mec,
+                        line: ml,
+                        character: mc,
+                        end_line: mel,
+                        end_char: mec,
                         uri: uri.to_string(),
                     });
                 }
@@ -173,8 +183,10 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                     name: s.name.name.clone(),
                     kind: 23, // Struct
                     detail: format!("struct {}", s.name.name),
-                    line: sl, character: sc,
-                    end_line: el, end_char: ec,
+                    line: sl,
+                    character: sc,
+                    end_line: el,
+                    end_char: ec,
                     uri: uri.to_string(),
                 });
                 for field in &s.fields {
@@ -183,8 +195,10 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                         name: field.name.name.clone(),
                         kind: 8,
                         detail: format!("{}: {:?}", field.name.name, field.ty),
-                        line: fl, character: fc,
-                        end_line: fl, end_char: fc + field.name.name.len() as u32,
+                        line: fl,
+                        character: fc,
+                        end_line: fl,
+                        end_char: fc + field.name.name.len() as u32,
                         uri: uri.to_string(),
                     });
                 }
@@ -196,8 +210,10 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
                     name: parts.join("."),
                     kind: 9, // Module
                     detail: format!("import {}", parts.join(".")),
-                    line: sl, character: sc,
-                    end_line: sl, end_char: sc,
+                    line: sl,
+                    character: sc,
+                    end_line: sl,
+                    end_char: sc,
                     uri: uri.to_string(),
                 });
             }
@@ -218,13 +234,18 @@ fn collect_block_symbols(
         if let Stmt::Let(l) = stmt {
             let (sl, sc) = lsp_pos(source, l.span.start);
             let kw = if l.is_const { "const" } else { "let" };
-            let ty_str = l.ty.as_ref().map(|t| format!(" : {:?}", t)).unwrap_or_default();
+            let ty_str =
+                l.ty.as_ref()
+                    .map(|t| format!(" : {:?}", t))
+                    .unwrap_or_default();
             symbols.push(SymbolDef {
                 name: l.name.name.clone(),
                 kind: 13, // Variable
                 detail: format!("{} {}{}", kw, l.name.name, ty_str),
-                line: sl, character: sc,
-                end_line: sl, end_char: sc + l.name.name.len() as u32,
+                line: sl,
+                character: sc,
+                end_line: sl,
+                end_char: sc + l.name.name.len() as u32,
                 uri: uri.to_string(),
             });
         }
@@ -239,15 +260,23 @@ struct Server {
 }
 
 impl Server {
-    fn new() -> Self { Server { docs: HashMap::new() } }
+    fn new() -> Self {
+        Server {
+            docs: HashMap::new(),
+        }
+    }
 
     fn update_doc(&mut self, uri: &str, text: &str) {
         let (diags_json, symbols) = analyse(uri, text);
-        self.docs.insert(uri.to_string(), (text.to_string(), symbols));
-        send_notification("textDocument/publishDiagnostics", json!({
-            "uri": uri,
-            "diagnostics": diags_json
-        }));
+        self.docs
+            .insert(uri.to_string(), (text.to_string(), symbols));
+        send_notification(
+            "textDocument/publishDiagnostics",
+            json!({
+                "uri": uri,
+                "diagnostics": diags_json
+            }),
+        );
     }
 
     fn handle(&mut self, msg: RpcMessage) {
@@ -259,22 +288,25 @@ impl Server {
 
         match method {
             "initialize" => {
-                send_response(&msg.id, json!({
-                    "capabilities": {
-                        "textDocumentSync": 1,
-                        "hoverProvider": true,
-                        "definitionProvider": true,
-                        "documentSymbolProvider": true,
-                        "completionProvider": {
-                            "triggerCharacters": [".", ":"]
+                send_response(
+                    &msg.id,
+                    json!({
+                        "capabilities": {
+                            "textDocumentSync": 1,
+                            "hoverProvider": true,
+                            "definitionProvider": true,
+                            "documentSymbolProvider": true,
+                            "completionProvider": {
+                                "triggerCharacters": [".", ":"]
+                            },
+                            "diagnosticProvider": {
+                                "interFileDependencies": false,
+                                "workspaceDiagnostics": false
+                            }
                         },
-                        "diagnosticProvider": {
-                            "interFileDependencies": false,
-                            "workspaceDiagnostics": false
-                        }
-                    },
-                    "serverInfo": { "name": "prady-lsp", "version": "1.0.0" }
-                }));
+                        "serverInfo": { "name": "prady-lsp", "version": "1.0.0" }
+                    }),
+                );
             }
 
             "initialized" => {} // no-op
@@ -289,7 +321,7 @@ impl Server {
 
             "textDocument/didOpen" => {
                 if let Some(doc) = params.get("textDocument") {
-                    let uri  = doc["uri"].as_str().unwrap_or("").to_string();
+                    let uri = doc["uri"].as_str().unwrap_or("").to_string();
                     let text = doc["text"].as_str().unwrap_or("").to_string();
                     self.update_doc(&uri, &text);
                 }
@@ -322,18 +354,21 @@ impl Server {
                     let uri = doc["uri"].as_str().unwrap_or("");
                     self.docs.remove(uri);
                     // Clear diagnostics
-                    send_notification("textDocument/publishDiagnostics", json!({
-                        "uri": uri,
-                        "diagnostics": []
-                    }));
+                    send_notification(
+                        "textDocument/publishDiagnostics",
+                        json!({
+                            "uri": uri,
+                            "diagnostics": []
+                        }),
+                    );
                 }
             }
 
             // ── Go-to-definition / Ctrl+Click ─────────────────────────────
             "textDocument/definition" => {
-                let uri  = params["textDocument"]["uri"].as_str().unwrap_or("");
+                let uri = params["textDocument"]["uri"].as_str().unwrap_or("");
                 let line = params["position"]["line"].as_u64().unwrap_or(0) as u32;
-                let col  = params["position"]["character"].as_u64().unwrap_or(0) as u32;
+                let col = params["position"]["character"].as_u64().unwrap_or(0) as u32;
 
                 let word = self.word_at(uri, line, col);
 
@@ -341,22 +376,25 @@ impl Server {
                 let location = self.find_definition(&word);
                 match location {
                     Some(loc) => send_response(&msg.id, loc),
-                    None      => send_response(&msg.id, Value::Null),
+                    None => send_response(&msg.id, Value::Null),
                 }
             }
 
             // ── Hover ─────────────────────────────────────────────────────
             "textDocument/hover" => {
-                let uri  = params["textDocument"]["uri"].as_str().unwrap_or("");
+                let uri = params["textDocument"]["uri"].as_str().unwrap_or("");
                 let line = params["position"]["line"].as_u64().unwrap_or(0) as u32;
-                let col  = params["position"]["character"].as_u64().unwrap_or(0) as u32;
+                let col = params["position"]["character"].as_u64().unwrap_or(0) as u32;
 
                 let word = self.word_at(uri, line, col);
                 let info = self.find_hover(&word, uri);
                 match info {
-                    Some(text) => send_response(&msg.id, json!({
-                        "contents": { "kind": "markdown", "value": text }
-                    })),
+                    Some(text) => send_response(
+                        &msg.id,
+                        json!({
+                            "contents": { "kind": "markdown", "value": text }
+                        }),
+                    ),
                     None => send_response(&msg.id, Value::Null),
                 }
             }
@@ -370,11 +408,11 @@ impl Server {
 
             // ── Completion ────────────────────────────────────────────────
             "textDocument/completion" => {
-                let uri  = params["textDocument"]["uri"].as_str().unwrap_or("");
+                let uri = params["textDocument"]["uri"].as_str().unwrap_or("");
                 let line = params["position"]["line"].as_u64().unwrap_or(0) as u32;
-                let col  = params["position"]["character"].as_u64().unwrap_or(0) as u32;
+                let col = params["position"]["character"].as_u64().unwrap_or(0) as u32;
                 let prefix = self.prefix_at(uri, line, col);
-                let items  = self.completions(&prefix, uri);
+                let items = self.completions(&prefix, uri);
                 send_response(&msg.id, json!({ "isIncomplete": false, "items": items }));
             }
 
@@ -397,9 +435,13 @@ impl Server {
         let l = lines.get(line as usize).copied().unwrap_or("");
         let bytes = l.as_bytes();
         let c = col as usize;
-        let start = (0..c).rev().find(|&i| !bytes[i].is_ascii_alphanumeric() && bytes[i] != b'_')
-            .map(|i| i + 1).unwrap_or(0);
-        let end = (c..bytes.len()).find(|&i| !bytes[i].is_ascii_alphanumeric() && bytes[i] != b'_')
+        let start = (0..c)
+            .rev()
+            .find(|&i| !bytes[i].is_ascii_alphanumeric() && bytes[i] != b'_')
+            .map(|i| i + 1)
+            .unwrap_or(0);
+        let end = (c..bytes.len())
+            .find(|&i| !bytes[i].is_ascii_alphanumeric() && bytes[i] != b'_')
             .unwrap_or(bytes.len());
         l[start..end].to_string()
     }
@@ -413,15 +455,19 @@ impl Server {
         let l = lines.get(line as usize).copied().unwrap_or("");
         let bytes = l.as_bytes();
         let c = col as usize;
-        let start = (0..c).rev()
+        let start = (0..c)
+            .rev()
             .find(|&i| !bytes[i].is_ascii_alphanumeric() && bytes[i] != b'_')
-            .map(|i| i + 1).unwrap_or(0);
+            .map(|i| i + 1)
+            .unwrap_or(0);
         l[start..c].to_string()
     }
 
     // ── Helper: find definition location ──────────────────────────────────
     fn find_definition(&self, name: &str) -> Option<Value> {
-        if name.is_empty() { return None; }
+        if name.is_empty() {
+            return None;
+        }
         for (_, symbols) in self.docs.values() {
             // Prefer exact top-level definitions (functions, classes, structs)
             for sym in symbols {
@@ -455,7 +501,9 @@ impl Server {
 
     // ── Helper: hover info ────────────────────────────────────────────────
     fn find_hover(&self, name: &str, uri: &str) -> Option<String> {
-        if name.is_empty() { return None; }
+        if name.is_empty() {
+            return None;
+        }
 
         // Check built-ins first
         let builtin = match name {
@@ -471,8 +519,7 @@ impl Server {
         }
 
         // Look in current doc first, then all docs
-        let search_order = std::iter::once(uri)
-            .chain(self.docs.keys().map(|s| s.as_str()));
+        let search_order = std::iter::once(uri).chain(self.docs.keys().map(|s| s.as_str()));
         for search_uri in search_order {
             if let Some((_, symbols)) = self.docs.get(search_uri) {
                 for sym in symbols {
@@ -491,31 +538,64 @@ impl Server {
             Some((_, s)) => s,
             None => return json!([]),
         };
-        let items: Vec<Value> = symbols.iter().map(|s| json!({
-            "name": s.name,
-            "kind": s.kind,
-            "detail": s.detail,
-            "location": {
-                "uri": s.uri,
-                "range": {
-                    "start": { "line": s.line, "character": s.character },
-                    "end":   { "line": s.end_line, "character": s.end_char }
-                }
-            }
-        })).collect();
+        let items: Vec<Value> = symbols
+            .iter()
+            .map(|s| {
+                json!({
+                    "name": s.name,
+                    "kind": s.kind,
+                    "detail": s.detail,
+                    "location": {
+                        "uri": s.uri,
+                        "range": {
+                            "start": { "line": s.line, "character": s.character },
+                            "end":   { "line": s.end_line, "character": s.end_char }
+                        }
+                    }
+                })
+            })
+            .collect();
         json!(items)
     }
 
     // ── Helper: completion items ──────────────────────────────────────────
     fn completions(&self, prefix: &str, _uri: &str) -> Vec<Value> {
         let keywords = [
-            "fn","let","const","mut","class","struct","interface","trait","enum",
-            "return","if","else","while","for","loop","break","continue",
-            "import","export","true","false","null","match","async","await",
-            "architecture","layer","using","abstract","extends","implements",
+            "fn",
+            "let",
+            "const",
+            "mut",
+            "class",
+            "struct",
+            "interface",
+            "trait",
+            "enum",
+            "return",
+            "if",
+            "else",
+            "while",
+            "for",
+            "loop",
+            "break",
+            "continue",
+            "import",
+            "export",
+            "true",
+            "false",
+            "null",
+            "match",
+            "async",
+            "await",
+            "architecture",
+            "layer",
+            "using",
+            "abstract",
+            "extends",
+            "implements",
         ];
 
-        let mut items: Vec<Value> = keywords.iter()
+        let mut items: Vec<Value> = keywords
+            .iter()
             .filter(|k| k.starts_with(prefix))
             .map(|k| json!({ "label": k, "kind": 14 }))
             .collect();
@@ -526,12 +606,12 @@ impl Server {
                 if sym.name.to_lowercase().starts_with(&prefix.to_lowercase()) {
                     let kind = match sym.kind {
                         12 => 3,  // Function
-                        5  => 7,  // Class
+                        5 => 7,   // Class
                         23 => 22, // Struct
-                        6  => 2,  // Method
-                        8  => 5,  // Field
+                        6 => 2,   // Method
+                        8 => 5,   // Field
                         13 => 6,  // Variable
-                        _  => 1,
+                        _ => 1,
                     };
                     items.push(json!({
                         "label": sym.name,
@@ -568,18 +648,24 @@ fn main() {
                 return; // EOF
             }
             let trimmed = buf.trim_end_matches(['\r', '\n']);
-            if trimmed.is_empty() { break; }
+            if trimmed.is_empty() {
+                break;
+            }
             if let Some(rest) = trimmed.strip_prefix("Content-Length: ") {
                 content_length = rest.trim().parse().unwrap_or(0);
             }
         }
 
-        if content_length == 0 { continue; }
+        if content_length == 0 {
+            continue;
+        }
 
         // Read body
         let mut body = vec![0u8; content_length];
         use std::io::Read;
-        if stdin.lock().read_exact(&mut body).is_err() { return; }
+        if stdin.lock().read_exact(&mut body).is_err() {
+            return;
+        }
 
         let body_str = match std::str::from_utf8(&body) {
             Ok(s) => s,
