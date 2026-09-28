@@ -1,6 +1,7 @@
 use prady_ast::AstPrinter;
 use prady_diagnostics::style;
 use prady_diagnostics::{DiagnosticBag, SourceFile};
+use prady_interp::Interpreter;
 use prady_lexer::Lexer;
 use prady_parser::Parser;
 use std::env;
@@ -289,12 +290,23 @@ fn run_file(file: &Path) -> ExitCode {
         return ExitCode::FAILURE;
     }
 
-    println!(
-        "{} Program verified cleanly. [Phase 1 front-end validated: {} declarations parsed]",
-        style::green_bold("ok:"),
-        prog.items.len()
-    );
-    ExitCode::SUCCESS
+    let mut interpreter = Interpreter::new(prog);
+    match interpreter.run_main() {
+        Ok(_) => ExitCode::SUCCESS,
+        Err(err) => {
+            eprintln!("{}: {}", style::red_bold("runtime error"), err.message);
+            if let Some(span) = err.span {
+                let (line, col) = source.get_location(span.start);
+                eprintln!(
+                    "  --> {}:{}:{}",
+                    file.display(),
+                    line,
+                    col
+                );
+            }
+            ExitCode::FAILURE
+        }
+    }
 }
 
 fn run_new(template: &str, name: &str, architecture: &str) -> ExitCode {

@@ -5,6 +5,7 @@ members = [
     "compiler/prady-ast",
     "compiler/prady-lexer",
     "compiler/prady-parser",
+    "compiler/prady-interp",
     "compiler/prady-cli",
 ]
 

@@ -15,6 +15,7 @@ version = "0.1.0"
 dependencies = [
  "prady-ast",
  "prady-diagnostics",
+ "prady-interp",
  "prady-lexer",
  "prady-parser",
 ]
@@ -22,6 +23,16 @@ dependencies = [
 [[package]]
 name = "prady-diagnostics"
 version = "0.1.0"
+
+[[package]]
+name = "prady-interp"
+version = "0.1.0"
+dependencies = [
+ "prady-ast",
+ "prady-diagnostics",
+ "prady-lexer",
+ "prady-parser",
+]
 
 [[package]]
 name = "prady-lexer"

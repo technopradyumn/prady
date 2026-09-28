@@ -1,17 +1,14 @@
 [package]
-name = "prady-cli"
+name = "prady-interp"
 version = "0.1.0"
 edition = "2021"
 authors = ["Prady Team"]
-description = "Command-line interface and developer driver for the Prady language"
-
-[[bin]]
-name = "prady"
-path = "src/main.rs"
+description = "Tree-walking interpreter and runtime engine for the Prady language"
 
 [dependencies]
 prady-diagnostics = { path = "../prady-diagnostics" }
 prady-ast = { path = "../prady-ast" }
+
+[dev-dependencies]
 prady-lexer = { path = "../prady-lexer" }
 prady-parser = { path = "../prady-parser" }
-prady-interp = { path = "../prady-interp" }
