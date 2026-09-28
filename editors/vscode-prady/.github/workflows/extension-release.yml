@@ -31,13 +31,12 @@ jobs:
 
       - name: Package .vsix
         run: vsce package --allow-missing-repository --no-git-tag-version --out prady-lang.vsix
-        working-directory: editors/vscode-prady
 
       - name: Upload .vsix artifact
         uses: actions/upload-artifact@v4
         with:
           name: prady-lang-vsix
-          path: editors/vscode-prady/prady-lang.vsix
+          path: prady-lang.vsix
 
   # ─── 2. Publish to both stores on tag push ────────────────────────────────
   publish:
@@ -65,13 +64,11 @@ jobs:
 
       - name: Publish to VS Code Marketplace
         run: vsce publish --pat "${{ secrets.VSCE_PAT }}"
-        working-directory: editors/vscode-prady
 
       - name: Publish to Open VSX
         run: ovsx publish prady-lang.vsix --pat "${{ secrets.OVSX_PAT }}"
-        working-directory: editors/vscode-prady
 
       - name: Upload .vsix to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: editors/vscode-prady/prady-lang.vsix
+          files: prady-lang.vsix
