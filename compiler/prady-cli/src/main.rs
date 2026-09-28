@@ -9,6 +9,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
+mod loader;
+
 fn print_help() {
     println!(
         "{} — Native, statically typed, safe & architecture-aware programming language\n",
@@ -143,41 +145,23 @@ fn run_check(file: &Path) -> ExitCode {
         style::cyan(&file.display().to_string())
     );
 
-    let source = match load_source(file) {
-        Ok(s) => s,
+    let project = match loader::load_program_and_modules(file) {
+        Ok(p) => p,
         Err(err) => {
-            eprintln!("{}: {}", style::red_bold("error"), err);
+            if !err.contains("Diagnostics error") {
+                eprintln!("{}: {}", style::red_bold("error"), err);
+            }
             return ExitCode::FAILURE;
         }
     };
 
-    let mut diagnostics = DiagnosticBag::new();
-    let mut lexer = Lexer::new(&source);
-    let tokens = lexer.tokenize(&mut diagnostics);
-
-    let mut parser = Parser::new(&tokens, &mut diagnostics);
-    let prog = parser.parse_program();
-
-    if diagnostics.has_errors() {
-        diagnostics.emit(&source);
-        eprintln!(
-            "{} Check failed with {} error(s).",
-            style::red_bold("x"),
-            diagnostics.diagnostics().len()
-        );
-        ExitCode::FAILURE
-    } else {
-        if !diagnostics.diagnostics().is_empty() {
-            diagnostics.emit(&source);
-        }
-        println!(
-            "{} Successfully validated {} ({} top-level items, 0 errors)",
-            style::green_bold("ok:"),
-            file.display(),
-            prog.items.len()
-        );
-        ExitCode::SUCCESS
-    }
+    println!(
+        "{} Successfully validated {} ({} top-level items across modules, 0 errors)",
+        style::green_bold("ok:"),
+        file.display(),
+        project.program.items.len()
+    );
+    ExitCode::SUCCESS
 }
 
 fn run_ast(file: &Path) -> ExitCode {
@@ -247,33 +231,17 @@ fn run_tokens(file: &Path) -> ExitCode {
 }
 
 fn run_file(file: &Path) -> ExitCode {
-    println!(
-        "{} Running {}",
-        style::green_bold("==>"),
-        style::cyan(&file.display().to_string())
-    );
-
-    let source = match load_source(file) {
-        Ok(s) => s,
+    let project = match loader::load_program_and_modules(file) {
+        Ok(p) => p,
         Err(err) => {
-            eprintln!("{}: {}", style::red_bold("error"), err);
+            if !err.contains("Diagnostics error") {
+                eprintln!("{}: {}", style::red_bold("error"), err);
+            }
             return ExitCode::FAILURE;
         }
     };
 
-    let mut diagnostics = DiagnosticBag::new();
-    let mut lexer = Lexer::new(&source);
-    let tokens = lexer.tokenize(&mut diagnostics);
-
-    let mut parser = Parser::new(&tokens, &mut diagnostics);
-    let prog = parser.parse_program();
-
-    if diagnostics.has_errors() {
-        diagnostics.emit(&source);
-        return ExitCode::FAILURE;
-    }
-
-    let has_main = prog.items.iter().any(|item| {
+    let has_main = project.program.items.iter().any(|item| {
         if let prady_ast::Item::Function(f) = item {
             f.name.name == "main"
         } else {
@@ -290,13 +258,13 @@ fn run_file(file: &Path) -> ExitCode {
         return ExitCode::FAILURE;
     }
 
-    let mut interpreter = Interpreter::new(prog);
+    let mut interpreter = Interpreter::new(project.program);
     match interpreter.run_main() {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
             eprintln!("{}: {}", style::red_bold("runtime error"), err.message);
             if let Some(span) = err.span {
-                let (line, col) = source.get_location(span.start);
+                let (line, col) = project.main_source.get_location(span.start);
                 eprintln!(
                     "  --> {}:{}:{}",
                     file.display(),

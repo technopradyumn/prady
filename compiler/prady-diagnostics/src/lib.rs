@@ -202,6 +202,10 @@ impl Diagnostic {
         self.suggestions.push(suggestion.into());
         self
     }
+
+    pub fn is_error(&self) -> bool {
+        self.level == DiagnosticLevel::Error
+    }
 }
 
 #[derive(Debug, Default, Clone)]

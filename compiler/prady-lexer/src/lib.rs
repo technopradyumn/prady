@@ -6,6 +6,7 @@ pub enum TokenKind {
     // Keywords
     Fn,
     Let,
+    Const,
     Mut,
     Class,
     Struct,
@@ -101,6 +102,7 @@ impl fmt::Display for TokenKind {
         match self {
             TokenKind::Fn => write!(f, "fn"),
             TokenKind::Let => write!(f, "let"),
+            TokenKind::Const => write!(f, "const"),
             TokenKind::Mut => write!(f, "mut"),
             TokenKind::Class => write!(f, "class"),
             TokenKind::Struct => write!(f, "struct"),
@@ -512,6 +514,7 @@ impl<'a> Lexer<'a> {
         let kind = match text.as_str() {
             "fn" => TokenKind::Fn,
             "let" => TokenKind::Let,
+            "const" => TokenKind::Const,
             "mut" => TokenKind::Mut,
             "class" => TokenKind::Class,
             "struct" => TokenKind::Struct,

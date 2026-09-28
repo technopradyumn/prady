@@ -503,8 +503,58 @@ impl Interpreter {
                         return Ok(self.execute_function(&func_decl, evaluated_args, Rc::clone(&env))?);
                     }
 
+                    // Check Class constructor (e.g. User("John", 25) or User())
+                    if let Some(class_decl) = self.classes.get(&id.name).cloned() {
+                        if let Some(new_method) = class_decl.methods.iter().find(|m| m.name.name == "new").cloned() {
+                            let method_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                            return Ok(self.execute_function(&new_method, evaluated_args, method_env)?);
+                        }
+
+                        let mut field_map = HashMap::new();
+                        // First: apply default_init for each field
+                        for field in &class_decl.fields {
+                            let default_val = if let Some(ref init_expr) = field.default_init {
+                                let tmp_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                                self.eval_value(init_expr, tmp_env).unwrap_or(Value::Null)
+                            } else {
+                                Value::Null
+                            };
+                            field_map.insert(field.name.name.clone(), default_val);
+                        }
+                        // Then: override with positional constructor args (if provided)
+                        for (i, field) in class_decl.fields.iter().enumerate() {
+                            if let Some(val) = evaluated_args.get(i) {
+                                field_map.insert(field.name.name.clone(), val.clone());
+                            }
+                        }
+
+                        return Ok(Value::Struct {
+                            name: class_decl.name.name.clone(),
+                            fields: Rc::new(RefCell::new(field_map)),
+                        });
+                    }
+
+                    // Check Struct constructor (e.g. Point(10, 20))
+                    if let Some(struct_decl) = self.structs.get(&id.name).cloned() {
+                        if let Some(new_method) = struct_decl.methods.iter().find(|m| m.name.name == "new").cloned() {
+                            let method_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                            return Ok(self.execute_function(&new_method, evaluated_args, method_env)?);
+                        }
+
+                        let mut field_map = HashMap::new();
+                        for (i, field) in struct_decl.fields.iter().enumerate() {
+                            let val = evaluated_args.get(i).cloned().unwrap_or(Value::Null);
+                            field_map.insert(field.name.name.clone(), val);
+                        }
+
+                        return Ok(Value::Struct {
+                            name: struct_decl.name.name.clone(),
+                            fields: Rc::new(RefCell::new(field_map)),
+                        });
+                    }
+
                     return Err(RuntimeError::new(
-                        format!("Undefined function '{}'", id.name),
+                        format!("Undefined function or class '{}'", id.name),
                         Some(id.span),
                     ).into());
                 }
@@ -513,6 +563,30 @@ impl Interpreter {
             }
 
             Expr::MethodCall(obj_expr, method_id, args, span) => {
+                // Check if obj_expr is a Class or Struct name (static method call, e.g. User.new(...) or Math.abs(...))
+                if let Expr::Ident(ref class_id) = **obj_expr {
+                    if let Some(class_decl) = self.classes.get(&class_id.name).cloned() {
+                        if let Some(method_decl) = class_decl.methods.iter().find(|m| m.name.name == method_id.name).cloned() {
+                            let mut evaluated_args = Vec::new();
+                            for arg in args {
+                                evaluated_args.push(self.eval_value(arg, Rc::clone(&env))?);
+                            }
+                            let method_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                            return Ok(self.execute_function(&method_decl, evaluated_args, method_env)?);
+                        }
+                    }
+                    if let Some(struct_decl) = self.structs.get(&class_id.name).cloned() {
+                        if let Some(method_decl) = struct_decl.methods.iter().find(|m| m.name.name == method_id.name).cloned() {
+                            let mut evaluated_args = Vec::new();
+                            for arg in args {
+                                evaluated_args.push(self.eval_value(arg, Rc::clone(&env))?);
+                            }
+                            let method_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                            return Ok(self.execute_function(&method_decl, evaluated_args, method_env)?);
+                        }
+                    }
+                }
+
                 let obj_val = self.eval_value(obj_expr, Rc::clone(&env))?;
                 let mut evaluated_args = Vec::new();
                 for arg in args {
@@ -543,17 +617,27 @@ impl Interpreter {
                     }
                 }
 
-                // Check class or struct methods
+                // Check class or struct instance methods (including inheritance)
                 if let Value::Struct { ref name, ref fields } = obj_val {
                     let mut found_method = None;
-                    if let Some(c) = self.classes.get(name) {
-                        for m in &c.methods {
-                            if m.name.name == method_id.name {
-                                found_method = Some(m.clone());
+                    let mut curr_class_name = Some(name.clone());
+                    while let Some(cname) = curr_class_name {
+                        if let Some(c) = self.classes.get(&cname) {
+                            for m in &c.methods {
+                                if m.name.name == method_id.name {
+                                    found_method = Some(m.clone());
+                                    break;
+                                }
+                            }
+                            if found_method.is_some() {
                                 break;
                             }
+                            curr_class_name = c.extends.as_ref().map(|id| id.name.clone());
+                        } else {
+                            break;
                         }
                     }
+
                     if found_method.is_none() {
                         if let Some(s) = self.structs.get(name) {
                             for m in &s.methods {
@@ -570,7 +654,29 @@ impl Interpreter {
                         for (k, v) in fields.borrow().iter() {
                             method_env.borrow_mut().define(k, v.clone(), true);
                         }
-                        return Ok(self.execute_function(&method_decl, evaluated_args, method_env)?);
+                        // Define 'this' and 'self'
+                        method_env.borrow_mut().define("this", obj_val.clone(), true);
+                        method_env.borrow_mut().define("self", obj_val.clone(), true);
+
+                        let res = self.execute_function(&method_decl, evaluated_args, Rc::clone(&method_env))?;
+
+                        // Sync any updated field variables back to struct instance
+                        let keys: Vec<String> = fields.borrow().keys().cloned().collect();
+                        for k in keys {
+                            if let Some(new_val) = method_env.borrow().get(&k) {
+                                fields.borrow_mut().insert(k, new_val);
+                            }
+                        }
+                        if let Some(Value::Struct { fields: updated_fields, .. }) = method_env.borrow().get("this") {
+                            if !Rc::ptr_eq(fields, &updated_fields) {
+                                let updates: Vec<(String, Value)> = updated_fields.borrow().iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+                                for (k, v) in updates {
+                                    fields.borrow_mut().insert(k, v);
+                                }
+                            }
+                        }
+
+                        return Ok(res);
                     }
                 }
 

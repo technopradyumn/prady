@@ -140,6 +140,7 @@ impl<'a> Parser<'a> {
             match self.peek_kind() {
                 TokenKind::Fn
                 | TokenKind::Let
+                | TokenKind::Const
                 | TokenKind::Struct
                 | TokenKind::Class
                 | TokenKind::Interface
@@ -305,8 +306,10 @@ impl<'a> Parser<'a> {
                 let span = f_name.span.merge(f_ty.span());
                 fields.push(FieldDecl {
                     visibility: Visibility::Public,
+                    is_const: false,
                     name: f_name,
                     ty: f_ty,
+                    default_init: None,
                     span,
                 });
                 self.match_token(&TokenKind::Comma);
@@ -361,6 +364,51 @@ impl<'a> Parser<'a> {
                 if let Some(m) = self.parse_function(is_async) {
                     methods.push(m);
                 }
+            } else if self.check(&TokenKind::Let) || self.check(&TokenKind::Const) {
+                // Support: let a: Int = 3;  or  const PI: Float = 3.14;
+                let is_const = self.check(&TokenKind::Const);
+                self.advance(); // consume let/const
+                let is_mut = !is_const && self.match_token(&TokenKind::Mut);
+                let f_name = match self.expect_ident("Expected field name after 'let'/'const'") {
+                    Some(n) => n,
+                    None => { self.synchronize(); continue; }
+                };
+                // Require type annotation
+                let f_ty = if self.match_token(&TokenKind::Colon) {
+                    match self.parse_type() {
+                        Some(t) => t,
+                        None => { self.synchronize(); continue; }
+                    }
+                } else {
+                    // No type annotation provided — emit error and skip
+                    let tok = self.peek();
+                    self.diagnostics.error(
+                        format!("Expected ':' and type after field '{}'", f_name.name),
+                        tok.span,
+                    );
+                    self.synchronize();
+                    continue;
+                };
+                // Optional default initializer
+                let default_init = if self.match_token(&TokenKind::Assign) {
+                    match self.parse_expr() {
+                        Some(e) => Some(e),
+                        None => { self.synchronize(); continue; }
+                    }
+                } else {
+                    None
+                };
+                self.match_token(&TokenKind::Semicolon);
+                let span = f_name.span.merge(f_ty.span());
+                let _ = is_mut; // stored in is_const flag
+                fields.push(FieldDecl {
+                    visibility: Visibility::Public,
+                    is_const,
+                    name: f_name,
+                    ty: f_ty,
+                    default_init,
+                    span,
+                });
             } else {
                 let f_name = self.expect_ident("Expected class member")?;
                 self.expect(TokenKind::Colon, "Expected ':' after field name")?;
@@ -368,8 +416,10 @@ impl<'a> Parser<'a> {
                 let span = f_name.span.merge(f_ty.span());
                 fields.push(FieldDecl {
                     visibility: Visibility::Public,
+                    is_const: false,
                     name: f_name,
                     ty: f_ty,
+                    default_init: None,
                     span,
                 });
                 self.match_token(&TokenKind::Semicolon);
@@ -660,7 +710,7 @@ impl<'a> Parser<'a> {
 
     fn parse_stmt(&mut self) -> Option<Stmt> {
         match self.peek_kind() {
-            TokenKind::Let => self.parse_let_stmt(),
+            TokenKind::Let | TokenKind::Const => self.parse_let_stmt(),
             TokenKind::Return => self.parse_return_stmt(),
             TokenKind::Break => self.parse_break_stmt(),
             TokenKind::Continue => self.parse_continue_stmt(),
@@ -671,8 +721,13 @@ impl<'a> Parser<'a> {
 
     fn parse_let_stmt(&mut self) -> Option<Stmt> {
         let start_span = self.peek().span;
-        self.expect(TokenKind::Let, "Expected 'let'")?;
-        let is_mut = self.match_token(&TokenKind::Mut);
+        let is_const = self.check(&TokenKind::Const);
+        if is_const {
+            self.advance(); // consume 'const'
+        } else {
+            self.expect(TokenKind::Let, "Expected 'let'")?;
+        }
+        let is_mut = !is_const && self.match_token(&TokenKind::Mut);
         let name = self.expect_ident("Expected variable name")?;
 
         let ty = if self.match_token(&TokenKind::Colon) {
@@ -687,10 +742,11 @@ impl<'a> Parser<'a> {
             None
         };
 
-        let end_tok = self.expect(TokenKind::Semicolon, "Expected ';' after let statement")?;
+        let end_tok = self.expect(TokenKind::Semicolon, "Expected ';' after let/const statement")?;
         let span = start_span.merge(end_tok.span);
 
         Some(Stmt::Let(LetStmt {
+            is_const,
             is_mut,
             name,
             ty,

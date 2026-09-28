@@ -176,8 +176,10 @@ pub struct ModuleDecl {
 #[derive(Debug, Clone, PartialEq)]
 pub struct FieldDecl {
     pub visibility: Visibility,
+    pub is_const: bool,
     pub name: Ident,
     pub ty: Type,
+    pub default_init: Option<Expr>,
     pub span: Span,
 }
 
@@ -200,6 +202,7 @@ pub enum Stmt {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LetStmt {
+    pub is_const: bool,
     pub is_mut: bool,
     pub name: Ident,
     pub ty: Option<Type>,

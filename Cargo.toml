@@ -7,6 +7,7 @@ members = [
     "compiler/prady-parser",
     "compiler/prady-interp",
     "compiler/prady-cli",
+    "compiler/prady-lsp",
 ]
 
 [workspace.package]
