@@ -880,7 +880,7 @@ pub fn handle_dsa_method(
                     let mut b = items_arr.borrow_mut();
                     if !b.contains(&val) {
                         b.push(val);
-                        b.sort_by(|a, b| val_cmp(a, b));
+                        b.sort_by(val_cmp);
                         f.insert("size".to_string(), Value::Int(b.len() as i64));
                     }
                     Ok(Some(Value::Null))
@@ -1486,7 +1486,7 @@ pub fn handle_dsa_method(
                 }
                 "size" => Ok(Some(Value::Int(size as i64))),
                 "all" => Ok(Some(Value::Bool(bits_arr.borrow().iter().all(|x| *x == Value::Bool(true))))),
-                "any" => Ok(Some(Value::Bool(bits_arr.borrow().iter().any(|x| *x == Value::Bool(true))))),
+                "any" => Ok(Some(Value::Bool(bits_arr.borrow().contains(&Value::Bool(true))))),
                 "none" => Ok(Some(Value::Bool(bits_arr.borrow().iter().all(|x| *x == Value::Bool(false))))),
                 _ => Ok(None),
             }
@@ -1501,7 +1501,7 @@ pub fn handle_dsa_method(
                     let val = args.first().cloned().unwrap_or(Value::Null);
                     let mut b = items_arr.borrow_mut();
                     b.push(val);
-                    b.sort_by(|x, y| val_cmp(x, y));
+                    b.sort_by(val_cmp);
                     f.insert("size".to_string(), Value::Int(b.len() as i64));
                     Ok(Some(Value::Null))
                 }

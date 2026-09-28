@@ -1,18 +1,18 @@
-/// prady-lsp: A Language Server Protocol implementation for the Prady language.
-///
-/// Speaks JSON-RPC 2.0 / LSP over stdin/stdout.
-/// Provides:
-///   - Diagnostics (errors/warnings) on open/change/save
-///   - Go-to-definition (Ctrl+Click) for functions, classes, structs
-///   - Hover information (type signatures, doc comments)
-///   - Document symbols (outline view / breadcrumbs)
-///   - Completion (keywords + declared symbols)
+//! prady-lsp: A Language Server Protocol implementation for the Prady language.
+//!
+//! Speaks JSON-RPC 2.0 / LSP over stdin/stdout.
+//! Provides:
+//!   - Diagnostics (errors/warnings) on open/change/save
+//!   - Go-to-definition (Ctrl+Click) for functions, classes, structs
+//!   - Hover information (type signatures, doc comments)
+//!   - Document symbols (outline view / breadcrumbs)
+//!   - Completion (keywords + declared symbols)
 
 use prady_diagnostics::{DiagnosticBag, SourceFile};
 use prady_lexer::Lexer;
 use prady_parser::Parser;
-use prady_ast::{Item, Stmt, Expr, Ident};
-use serde::{Deserialize, Serialize};
+use prady_ast::{Item, Stmt};
+use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::io::{self, BufRead, Write};
@@ -77,7 +77,7 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
     for d in diag_bag.diagnostics() {
         let sev = if d.is_error() { 1u32 } else { 2u32 };
         let (sl, sc) = lsp_pos(&source, d.span.start);
-        let (mut el, mut ec) = lsp_pos(&source, d.span.end.max(d.span.start));
+        let (el, mut ec) = lsp_pos(&source, d.span.end.max(d.span.start));
         if sl == el && ec <= sc {
             ec = sc + 1;
         }
@@ -422,7 +422,7 @@ impl Server {
     // ── Helper: find definition location ──────────────────────────────────
     fn find_definition(&self, name: &str) -> Option<Value> {
         if name.is_empty() { return None; }
-        for (_, (_, symbols)) in &self.docs {
+        for (_, symbols) in self.docs.values() {
             // Prefer exact top-level definitions (functions, classes, structs)
             for sym in symbols {
                 if sym.name == name && matches!(sym.kind, 12 | 5 | 23 | 6) {
@@ -437,7 +437,7 @@ impl Server {
             }
         }
         // Fallback: any symbol with that name
-        for (_, (_, symbols)) in &self.docs {
+        for (_, symbols) in self.docs.values() {
             for sym in symbols {
                 if sym.name == name {
                     return Some(json!({
@@ -507,7 +507,7 @@ impl Server {
     }
 
     // ── Helper: completion items ──────────────────────────────────────────
-    fn completions(&self, prefix: &str, uri: &str) -> Vec<Value> {
+    fn completions(&self, prefix: &str, _uri: &str) -> Vec<Value> {
         let keywords = [
             "fn","let","const","mut","class","struct","interface","trait","enum",
             "return","if","else","while","for","loop","break","continue",
@@ -521,7 +521,7 @@ impl Server {
             .collect();
 
         // Add symbols from all open docs
-        for (_, (_, symbols)) in &self.docs {
+        for (_, symbols) in self.docs.values() {
             for sym in symbols {
                 if sym.name.to_lowercase().starts_with(&prefix.to_lowercase()) {
                     let kind = match sym.kind {
@@ -567,7 +567,7 @@ fn main() {
             if stdin.lock().read_line(&mut buf).unwrap_or(0) == 0 {
                 return; // EOF
             }
-            let trimmed = buf.trim_end_matches(|c| c == '\r' || c == '\n');
+            let trimmed = buf.trim_end_matches(['\r', '\n']);
             if trimmed.is_empty() { break; }
             if let Some(rest) = trimmed.strip_prefix("Content-Length: ") {
                 content_length = rest.trim().parse().unwrap_or(0);

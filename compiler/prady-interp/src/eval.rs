@@ -562,7 +562,7 @@ impl Interpreter {
                     // Check variables in env (e.g. higher-order functions passed as variables)
                     if let Some(val) = env.borrow().get(&id.name) {
                         if let Value::Function { .. } = &val {
-                            return Ok(self.execute_callback(&val, evaluated_args, Rc::clone(&env))?);
+                            return self.execute_callback(&val, evaluated_args, Rc::clone(&env));
                         }
                     }
 
@@ -629,7 +629,7 @@ impl Interpreter {
 
                 let callee_val = self.eval_value(callee, Rc::clone(&env))?;
                 if let Value::Function { .. } = &callee_val {
-                    return Ok(self.execute_callback(&callee_val, evaluated_args, Rc::clone(&env))?);
+                    return self.execute_callback(&callee_val, evaluated_args, Rc::clone(&env));
                 }
 
                 Err(RuntimeError::new("Unsupported callee expression", Some(*span)).into())
