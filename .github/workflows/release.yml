@@ -85,7 +85,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build release binary
-        run: cargo build --release --package prady-cli --target ${{ matrix.target }}
+        run: cargo build --release --package prady-cli --package prady-lsp --target ${{ matrix.target }}
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
@@ -101,6 +101,7 @@ jobs:
           $name = "${{ env.BINARY_NAME }}-${{ steps.version.outputs.tag }}-${{ matrix.target }}"
           New-Item -ItemType Directory -Path $name
           Copy-Item "target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}${{ matrix.binary_ext }}" "$name/"
+          Copy-Item "target/${{ matrix.target }}/release/prady-lsp${{ matrix.binary_ext }}" "$name/" -ErrorAction SilentlyContinue
           Copy-Item "README.md", "LICENSE" "$name/" -ErrorAction SilentlyContinue
           Compress-Archive -Path "$name/*" -DestinationPath "$name.zip"
           echo "ASSET=$name.zip" >> $env:GITHUB_ENV
@@ -112,6 +113,7 @@ jobs:
           name="${{ env.BINARY_NAME }}-${{ steps.version.outputs.tag }}-${{ matrix.target }}"
           mkdir "$name"
           cp "target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}" "$name/"
+          cp "target/${{ matrix.target }}/release/prady-lsp" "$name/" 2>/dev/null || true
           cp README.md LICENSE "$name/" 2>/dev/null || true
           tar czf "$name.tar.gz" "$name"
           echo "ASSET=$name.tar.gz" >> "$GITHUB_ENV"

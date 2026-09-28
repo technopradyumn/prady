@@ -22,8 +22,31 @@ CLI: prady   |   Extension: .pr   |   Compiler: Rust + LLVM
 
 ## 🚀 Quick Start
 
-### Building the Compiler
-Prady compiler is built with Rust (workspace edition 2021+):
+### ⚡ 1-Line Automated Installation (No Git Clone Required)
+
+Install the pre-built `prady` compiler and `prady-lsp` language server directly onto your machine:
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex
+```
+
+**Windows (Command Prompt / CMD):**
+```cmd
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex"
+```
+
+**macOS & Linux (Bash / Zsh):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/technopradyumn/prady/main/install.sh | sh
+```
+
+> *The installer downloads the native binaries, registers them in your system/user `PATH` environment variable permanently, and makes `prady` immediately callable anywhere on your computer.*
+
+---
+
+### Building from Source (Alternative)
+If you prefer to compile manually using Rust:
 
 ```bash
 cargo build --release
