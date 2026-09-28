@@ -743,7 +743,11 @@ impl<'a> Lexer<'a> {
             diagnostics.error("Unterminated string literal", span);
         }
 
-        Token::new(TokenKind::StringLiteral(content), span, r#""...""#.to_string())
+        Token::new(
+            TokenKind::StringLiteral(content),
+            span,
+            r#""...""#.to_string(),
+        )
     }
 
     fn lex_char(&mut self, start: usize, diagnostics: &mut DiagnosticBag) -> Token {
