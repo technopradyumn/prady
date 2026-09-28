@@ -829,7 +829,12 @@ impl<'a> Parser<'a> {
             // Expression statement
             // Statements like if/while/for/loop don't require trailing semicolon
             match &expr {
-                Expr::If(..) | Expr::While(..) | Expr::For(..) | Expr::Loop(..) => {
+                Expr::If(..)
+                | Expr::While(..)
+                | Expr::For(..)
+                | Expr::Loop(..)
+                | Expr::Match(..)
+                | Expr::Switch(..) => {
                     self.match_token(&TokenKind::Semicolon);
                     Some(Stmt::Expr(expr))
                 }
@@ -958,8 +963,11 @@ impl<'a> Parser<'a> {
             TokenKind::If => self.parse_if_expr(),
             TokenKind::While => self.parse_while_expr(),
             TokenKind::For => self.parse_for_expr(),
+            TokenKind::ForEach => self.parse_for_expr(),
             TokenKind::Loop => self.parse_loop_expr(),
             TokenKind::Match => self.parse_match_expr(),
+            TokenKind::Switch => self.parse_switch_expr(),
+            TokenKind::Fn => self.parse_lambda_expr(),
             TokenKind::OpenBrace => {
                 let block = self.parse_block()?;
                 Some(Expr::Block(block))
@@ -1129,23 +1137,39 @@ impl<'a> Parser<'a> {
 
     fn parse_for_expr(&mut self) -> Option<Expr> {
         let start_span = self.peek().span;
-        self.expect(TokenKind::For, "Expected 'for'")?;
+        if !self.match_token(&TokenKind::For) {
+            self.expect(TokenKind::ForEach, "Expected 'for' or 'foreach'")?;
+        }
+
+        let has_paren = self.match_token(&TokenKind::OpenParen);
+        self.match_token(&TokenKind::Let);
+        self.match_token(&TokenKind::Mut);
+        self.match_token(&TokenKind::Const);
+
         let var = self.expect_ident("Expected loop variable")?;
 
-        // Expect 'in' keyword or identifier
-        if let TokenKind::Ident(ref s) = self.peek().kind {
-            if s == "in" {
+        if self.match_token(&TokenKind::Colon) {
+            let _ = self.parse_type();
+        }
+
+        if self.check(&TokenKind::In) || self.check(&TokenKind::Of) {
+            self.advance();
+        } else if let TokenKind::Ident(ref s) = self.peek().kind {
+            if s == "in" || s == "of" {
                 self.advance();
             } else {
                 self.diagnostics
-                    .error("Expected 'in' in for loop", self.peek().span);
+                    .error("Expected 'in' or 'of' in for loop", self.peek().span);
             }
         } else {
             self.diagnostics
-                .error("Expected 'in' in for loop", self.peek().span);
+                .error("Expected 'in' or 'of' in for loop", self.peek().span);
         }
 
         let iter = self.parse_expr()?;
+        if has_paren {
+            self.expect(TokenKind::CloseParen, "Expected ')' after for header")?;
+        }
         let body = self.parse_block()?;
         let span = start_span.merge(body.span);
         Some(Expr::For(var, Box::new(iter), body, span))
@@ -1183,6 +1207,128 @@ impl<'a> Parser<'a> {
         let end_tok = self.expect(TokenKind::CloseBrace, "Expected '}'")?;
         let span = start_span.merge(end_tok.span);
         Some(Expr::Match(Box::new(target), arms, span))
+    }
+
+    fn parse_switch_expr(&mut self) -> Option<Expr> {
+        let start_span = self.peek().span;
+        self.expect(TokenKind::Switch, "Expected 'switch'")?;
+        let has_paren = self.match_token(&TokenKind::OpenParen);
+        let target = self.parse_expr()?;
+        if has_paren {
+            self.expect(TokenKind::CloseParen, "Expected ')' after switch target")?;
+        }
+
+        self.expect(TokenKind::OpenBrace, "Expected '{' after switch target")?;
+        let mut cases = Vec::new();
+        let mut default_case = None;
+
+        while !self.check(&TokenKind::CloseBrace) && !self.is_at_end() {
+            if self.match_token(&TokenKind::Case) {
+                let case_start = self.peek().span;
+                let val = self.parse_expr()?;
+                if !self.match_token(&TokenKind::Colon) {
+                    self.match_token(&TokenKind::FatArrow);
+                }
+                let body = if self.check(&TokenKind::OpenBrace) {
+                    self.parse_block()?
+                } else {
+                    let mut stmts = Vec::new();
+                    while !self.check(&TokenKind::Case)
+                        && !self.check(&TokenKind::Default)
+                        && !self.check(&TokenKind::CloseBrace)
+                        && !self.is_at_end()
+                    {
+                        if let Some(stmt) = self.parse_stmt() {
+                            stmts.push(stmt);
+                        } else {
+                            break;
+                        }
+                    }
+                    let span = if let Some(first) = stmts.first() {
+                        let last = stmts.last().unwrap();
+                        first.span().merge(last.span())
+                    } else {
+                        case_start
+                    };
+                    Block { stmts, span }
+                };
+                let span = case_start.merge(body.span);
+                cases.push(SwitchCase {
+                    value: val,
+                    body,
+                    span,
+                });
+            } else if self.match_token(&TokenKind::Default) {
+                let def_start = self.peek().span;
+                if !self.match_token(&TokenKind::Colon) {
+                    self.match_token(&TokenKind::FatArrow);
+                }
+                let body = if self.check(&TokenKind::OpenBrace) {
+                    self.parse_block()?
+                } else {
+                    let mut stmts = Vec::new();
+                    while !self.check(&TokenKind::Case)
+                        && !self.check(&TokenKind::Default)
+                        && !self.check(&TokenKind::CloseBrace)
+                        && !self.is_at_end()
+                    {
+                        if let Some(stmt) = self.parse_stmt() {
+                            stmts.push(stmt);
+                        } else {
+                            break;
+                        }
+                    }
+                    let span = if let Some(first) = stmts.first() {
+                        let last = stmts.last().unwrap();
+                        first.span().merge(last.span())
+                    } else {
+                        def_start
+                    };
+                    Block { stmts, span }
+                };
+                default_case = Some(body);
+            } else {
+                self.advance();
+            }
+        }
+        let end_tok = self.expect(TokenKind::CloseBrace, "Expected '}' after switch cases")?;
+        let span = start_span.merge(end_tok.span);
+        Some(Expr::Switch(Box::new(target), cases, default_case, span))
+    }
+
+    fn parse_lambda_expr(&mut self) -> Option<Expr> {
+        let start_span = self.peek().span;
+        self.expect(TokenKind::Fn, "Expected 'fn'")?;
+        self.expect(TokenKind::OpenParen, "Expected '(' for parameter list")?;
+        let mut params = Vec::new();
+        while !self.check(&TokenKind::CloseParen) && !self.is_at_end() {
+            let is_mut = self.match_token(&TokenKind::Mut);
+            let name = self.expect_ident("Expected parameter name")?;
+            let ty = if self.match_token(&TokenKind::Colon) {
+                self.parse_type()?
+            } else {
+                Type::Named(name.clone(), Vec::new(), name.span)
+            };
+            let span = name.span;
+            params.push(Param {
+                is_mut,
+                name,
+                ty,
+                span,
+            });
+            if !self.match_token(&TokenKind::Comma) {
+                break;
+            }
+        }
+        self.expect(TokenKind::CloseParen, "Expected ')' after parameter list")?;
+        let return_type = if self.match_token(&TokenKind::Arrow) {
+            Some(self.parse_type()?)
+        } else {
+            None
+        };
+        let body = self.parse_block()?;
+        let span = start_span.merge(body.span);
+        Some(Expr::Lambda(params, return_type, body, span))
     }
 
     fn parse_pattern(&mut self) -> Option<Pattern> {

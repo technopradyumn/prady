@@ -1,6 +1,6 @@
 [package]
 name = "prady-parser"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Prady Team"]
 description = "Recursive-descent & Pratt parser for the Prady language"

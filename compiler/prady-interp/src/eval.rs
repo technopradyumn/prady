@@ -144,6 +144,52 @@ impl Interpreter {
         }
     }
 
+    pub fn execute_callback(
+        &mut self,
+        callback: &Value,
+        args: Vec<Value>,
+        parent_env: Rc<RefCell<Environment>>,
+    ) -> Result<Value, FlowSignal> {
+        match callback {
+            Value::Function {
+                params,
+                body,
+                closure_env,
+                ..
+            } => {
+                let base_env = closure_env
+                    .as_ref()
+                    .map(Rc::clone)
+                    .unwrap_or_else(|| Rc::clone(&parent_env));
+                let env = Rc::new(RefCell::new(Environment::with_parent(base_env)));
+                for (i, p) in params.iter().enumerate() {
+                    let val = args.get(i).cloned().unwrap_or(Value::Null);
+                    env.borrow_mut().define(p, val, false);
+                }
+                match self.execute_block(body, env) {
+                    Ok(v) => Ok(v),
+                    Err(FlowSignal::Return(v)) => Ok(v),
+                    Err(other) => Err(other),
+                }
+            }
+            Value::String(fn_name) => {
+                if let Some(func_decl) = self.functions.get(fn_name).cloned() {
+                    let env = Rc::new(RefCell::new(Environment::with_parent(parent_env)));
+                    self.execute_function(&func_decl, args, env).map_err(FlowSignal::Error)
+                } else {
+                    Err(FlowSignal::Error(RuntimeError::new(
+                        format!("Function '{}' not found for callback", fn_name),
+                        None,
+                    )))
+                }
+            }
+            _ => Err(FlowSignal::Error(RuntimeError::new(
+                format!("Expected callable function for callback, found {}", callback.type_name()),
+                None,
+            ))),
+        }
+    }
+
     pub fn execute_block(
         &mut self,
         block: &Block,
@@ -354,6 +400,16 @@ impl Interpreter {
                     });
                 }
 
+                // Check user-defined function as first-class value
+                if let Some(func_decl) = self.functions.get(&id.name).cloned() {
+                    return Ok(Value::Function {
+                        name: Some(func_decl.name.name.clone()),
+                        params: func_decl.params.iter().map(|p| p.name.name.clone()).collect(),
+                        body: func_decl.body.clone(),
+                        closure_env: None,
+                    });
+                }
+
                 Err(RuntimeError::new(
                     format!("Undefined identifier '{}'", id.name),
                     Some(id.span),
@@ -498,6 +554,18 @@ impl Interpreter {
                         }
                     }
 
+                    // Built-in DSA Constructors: Map, Set, Stack, Queue, LRUCache, etc.
+                    if let Some(dsa_inst) = crate::dsa::create_dsa_instance(&id.name, evaluated_args.clone()) {
+                        return Ok(dsa_inst);
+                    }
+
+                    // Check variables in env (e.g. higher-order functions passed as variables)
+                    if let Some(val) = env.borrow().get(&id.name) {
+                        if let Value::Function { .. } = &val {
+                            return Ok(self.execute_callback(&val, evaluated_args, Rc::clone(&env))?);
+                        }
+                    }
+
                     // Check user-defined functions
                     if let Some(func_decl) = self.functions.get(&id.name).cloned() {
                         return Ok(self.execute_function(&func_decl, evaluated_args, Rc::clone(&env))?);
@@ -559,6 +627,11 @@ impl Interpreter {
                     ).into());
                 }
 
+                let callee_val = self.eval_value(callee, Rc::clone(&env))?;
+                if let Value::Function { .. } = &callee_val {
+                    return Ok(self.execute_callback(&callee_val, evaluated_args, Rc::clone(&env))?);
+                }
+
                 Err(RuntimeError::new("Unsupported callee expression", Some(*span)).into())
             }
 
@@ -593,27 +666,331 @@ impl Interpreter {
                     evaluated_args.push(self.eval_value(arg, Rc::clone(&env))?);
                 }
 
-                // Built-in methods
-                if method_id.name == "len" {
-                    match &obj_val {
-                        Value::Array(a) => return Ok(Value::Int(a.borrow().len() as i64)),
-                        Value::String(s) => return Ok(Value::Int(s.len() as i64)),
+                // Built-in Array methods
+                if let Value::Array(a) = &obj_val {
+                    match method_id.name.as_str() {
+                        "len" | "length" => return Ok(Value::Int(a.borrow().len() as i64)),
+                        "push" => {
+                            for item in evaluated_args {
+                                a.borrow_mut().push(item);
+                            }
+                            return Ok(Value::Null);
+                        }
+                        "pop" => return Ok(a.borrow_mut().pop().unwrap_or(Value::Null)),
+                        "shift" => {
+                            let mut b = a.borrow_mut();
+                            return Ok(if b.is_empty() { Value::Null } else { b.remove(0) });
+                        }
+                        "unshift" => {
+                            let mut b = a.borrow_mut();
+                            for item in evaluated_args.into_iter().rev() {
+                                b.insert(0, item);
+                            }
+                            return Ok(Value::Int(b.len() as i64));
+                        }
+                        "indexOf" => {
+                            let target = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let b = a.borrow();
+                            let pos = b.iter().position(|x| x == &target).map(|i| i as i64).unwrap_or(-1);
+                            return Ok(Value::Int(pos));
+                        }
+                        "includes" => {
+                            let target = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let b = a.borrow();
+                            return Ok(Value::Bool(b.contains(&target)));
+                        }
+                        "join" => {
+                            let sep = match evaluated_args.first() {
+                                Some(Value::String(s)) => s.clone(),
+                                _ => ",".to_string(),
+                            };
+                            let b = a.borrow();
+                            let parts: Vec<String> = b.iter().map(|v| v.to_display_string()).collect();
+                            return Ok(Value::String(parts.join(&sep)));
+                        }
+                        "reverse" => {
+                            a.borrow_mut().reverse();
+                            return Ok(obj_val.clone());
+                        }
+                        "sort" => {
+                            a.borrow_mut().sort_by(|x, y| match (x, y) {
+                                (Value::Int(i1), Value::Int(i2)) => i1.cmp(i2),
+                                (Value::Float(f1), Value::Float(f2)) => f1.partial_cmp(f2).unwrap_or(std::cmp::Ordering::Equal),
+                                (Value::String(s1), Value::String(s2)) => s1.cmp(s2),
+                                _ => std::cmp::Ordering::Equal,
+                            });
+                            return Ok(obj_val.clone());
+                        }
+                        "slice" => {
+                            let b = a.borrow();
+                            let len = b.len() as i64;
+                            let start = match evaluated_args.first() {
+                                Some(Value::Int(s)) => if *s < 0 { (len + *s).max(0) as usize } else { (*s).min(len) as usize },
+                                _ => 0,
+                            };
+                            let end = match evaluated_args.get(1) {
+                                Some(Value::Int(e)) => if *e < 0 { (len + *e).max(0) as usize } else { (*e).min(len) as usize },
+                                _ => len as usize,
+                            };
+                            let res = if start < end && start < b.len() {
+                                b[start..end.min(b.len())].to_vec()
+                            } else {
+                                Vec::new()
+                            };
+                            return Ok(Value::Array(Rc::new(RefCell::new(res))));
+                        }
+                        "splice" => {
+                            let mut b = a.borrow_mut();
+                            let len = b.len() as i64;
+                            let start = match evaluated_args.first() {
+                                Some(Value::Int(s)) => if *s < 0 { (len + *s).max(0) as usize } else { (*s).min(len) as usize },
+                                _ => 0,
+                            };
+                            let delete_count = match evaluated_args.get(1) {
+                                Some(Value::Int(d)) => (*d).max(0) as usize,
+                                _ => b.len().saturating_sub(start),
+                            };
+                            let items_to_insert: Vec<Value> = evaluated_args.into_iter().skip(2).collect();
+                            let mut removed = Vec::new();
+                            let actual_del = delete_count.min(b.len().saturating_sub(start));
+                            for _ in 0..actual_del {
+                                removed.push(b.remove(start));
+                            }
+                            for (offset, item) in items_to_insert.into_iter().enumerate() {
+                                b.insert(start + offset, item);
+                            }
+                            return Ok(Value::Array(Rc::new(RefCell::new(removed))));
+                        }
+                        "concat" => {
+                            let mut res = a.borrow().clone();
+                            for arg in evaluated_args {
+                                if let Value::Array(other) = arg {
+                                    res.extend(other.borrow().clone());
+                                } else {
+                                    res.push(arg);
+                                }
+                            }
+                            return Ok(Value::Array(Rc::new(RefCell::new(res))));
+                        }
+                        "flat" => {
+                            let mut flat_res = Vec::new();
+                            for item in a.borrow().iter() {
+                                if let Value::Array(sub) = item {
+                                    flat_res.extend(sub.borrow().clone());
+                                } else {
+                                    flat_res.push(item.clone());
+                                }
+                            }
+                            return Ok(Value::Array(Rc::new(RefCell::new(flat_res))));
+                        }
+                        "fill" => {
+                            let fill_val = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let mut b = a.borrow_mut();
+                            for x in b.iter_mut() {
+                                *x = fill_val.clone();
+                            }
+                            return Ok(obj_val.clone());
+                        }
+                        "at" => {
+                            let idx = match evaluated_args.first() { Some(Value::Int(i)) => *i, _ => 0 };
+                            let b = a.borrow();
+                            let actual_idx = if idx < 0 { b.len() as i64 + idx } else { idx };
+                            if actual_idx >= 0 && (actual_idx as usize) < b.len() {
+                                return Ok(b[actual_idx as usize].clone());
+                            }
+                            return Ok(Value::Null);
+                        }
+                        "clear" => {
+                            a.borrow_mut().clear();
+                            return Ok(Value::Null);
+                        }
+                        "isEmpty" => {
+                            return Ok(Value::Bool(a.borrow().is_empty()));
+                        }
+                        "map" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            let mut mapped = Vec::new();
+                            for (i, item) in elements.into_iter().enumerate() {
+                                let res = self.execute_callback(&cb, vec![item, Value::Int(i as i64)], Rc::clone(&env))?;
+                                mapped.push(res);
+                            }
+                            return Ok(Value::Array(Rc::new(RefCell::new(mapped))));
+                        }
+                        "filter" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            let mut filtered = Vec::new();
+                            for (i, item) in elements.into_iter().enumerate() {
+                                let res = self.execute_callback(&cb, vec![item.clone(), Value::Int(i as i64)], Rc::clone(&env))?;
+                                if res.is_truthy() {
+                                    filtered.push(item);
+                                }
+                            }
+                            return Ok(Value::Array(Rc::new(RefCell::new(filtered))));
+                        }
+                        "reduce" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            let has_init = evaluated_args.len() > 1;
+                            let mut acc = if has_init {
+                                evaluated_args[1].clone()
+                            } else if !elements.is_empty() {
+                                elements[0].clone()
+                            } else {
+                                Value::Null
+                            };
+                            let skip_count = if has_init { 0 } else { 1 };
+                            for (i, item) in elements.into_iter().skip(skip_count).enumerate() {
+                                acc = self.execute_callback(&cb, vec![acc, item, Value::Int((skip_count + i) as i64)], Rc::clone(&env))?;
+                            }
+                            return Ok(acc);
+                        }
+                        "forEach" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            for (i, item) in elements.into_iter().enumerate() {
+                                self.execute_callback(&cb, vec![item, Value::Int(i as i64)], Rc::clone(&env))?;
+                            }
+                            return Ok(Value::Null);
+                        }
+                        "find" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            for (i, item) in elements.into_iter().enumerate() {
+                                let res = self.execute_callback(&cb, vec![item.clone(), Value::Int(i as i64)], Rc::clone(&env))?;
+                                if res.is_truthy() {
+                                    return Ok(item);
+                                }
+                            }
+                            return Ok(Value::Null);
+                        }
+                        "findIndex" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            for (i, item) in elements.into_iter().enumerate() {
+                                let res = self.execute_callback(&cb, vec![item, Value::Int(i as i64)], Rc::clone(&env))?;
+                                if res.is_truthy() {
+                                    return Ok(Value::Int(i as i64));
+                                }
+                            }
+                            return Ok(Value::Int(-1));
+                        }
+                        "some" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            for (i, item) in elements.into_iter().enumerate() {
+                                let res = self.execute_callback(&cb, vec![item, Value::Int(i as i64)], Rc::clone(&env))?;
+                                if res.is_truthy() {
+                                    return Ok(Value::Bool(true));
+                                }
+                            }
+                            return Ok(Value::Bool(false));
+                        }
+                        "every" => {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            let elements = a.borrow().clone();
+                            for (i, item) in elements.into_iter().enumerate() {
+                                let res = self.execute_callback(&cb, vec![item, Value::Int(i as i64)], Rc::clone(&env))?;
+                                if !res.is_truthy() {
+                                    return Ok(Value::Bool(false));
+                                }
+                            }
+                            return Ok(Value::Bool(true));
+                        }
                         _ => {}
                     }
                 }
 
-                if method_id.name == "push" {
-                    if let Value::Array(a) = &obj_val {
-                        for item in evaluated_args {
-                            a.borrow_mut().push(item);
+                // Built-in String methods
+                if let Value::String(s) = &obj_val {
+                    match method_id.name.as_str() {
+                        "len" | "length" => return Ok(Value::Int(s.len() as i64)),
+                        "toUpperCase" => return Ok(Value::String(s.to_uppercase())),
+                        "toLowerCase" => return Ok(Value::String(s.to_lowercase())),
+                        "trim" => return Ok(Value::String(s.trim().to_string())),
+                        "split" => {
+                            let sep = match evaluated_args.first() {
+                                Some(Value::String(sp)) => sp.clone(),
+                                _ => " ".to_string(),
+                            };
+                            let parts: Vec<Value> = if sep.is_empty() {
+                                s.chars().map(|c| Value::String(c.to_string())).collect()
+                            } else {
+                                s.split(&sep).map(|part| Value::String(part.to_string())).collect()
+                            };
+                            return Ok(Value::Array(Rc::new(RefCell::new(parts))));
                         }
-                        return Ok(Value::Null);
+                        "includes" => {
+                            let sub = match evaluated_args.first() { Some(Value::String(sub)) => sub.as_str(), _ => "" };
+                            return Ok(Value::Bool(s.contains(sub)));
+                        }
+                        "indexOf" => {
+                            let sub = match evaluated_args.first() { Some(Value::String(sub)) => sub.as_str(), _ => "" };
+                            let pos = s.find(sub).map(|i| i as i64).unwrap_or(-1);
+                            return Ok(Value::Int(pos));
+                        }
+                        "startsWith" => {
+                            let prefix = match evaluated_args.first() { Some(Value::String(p)) => p.as_str(), _ => "" };
+                            return Ok(Value::Bool(s.starts_with(prefix)));
+                        }
+                        "endsWith" => {
+                            let suffix = match evaluated_args.first() { Some(Value::String(p)) => p.as_str(), _ => "" };
+                            return Ok(Value::Bool(s.ends_with(suffix)));
+                        }
+                        "replace" => {
+                            let from = match evaluated_args.first() { Some(Value::String(f)) => f.as_str(), _ => "" };
+                            let to = match evaluated_args.get(1) { Some(Value::String(t)) => t.as_str(), _ => "" };
+                            return Ok(Value::String(s.replace(from, to)));
+                        }
+                        "substring" | "slice" => {
+                            let len = s.len() as i64;
+                            let start = match evaluated_args.first() {
+                                Some(Value::Int(i)) => if *i < 0 { (len + *i).max(0) as usize } else { (*i).min(len) as usize },
+                                _ => 0,
+                            };
+                            let end = match evaluated_args.get(1) {
+                                Some(Value::Int(i)) => if *i < 0 { (len + *i).max(0) as usize } else { (*i).min(len) as usize },
+                                _ => len as usize,
+                            };
+                            if start <= end && start < s.len() {
+                                return Ok(Value::String(s[start..end.min(s.len())].to_string()));
+                            }
+                            return Ok(Value::String(String::new()));
+                        }
+                        "charAt" => {
+                            let idx = match evaluated_args.first() { Some(Value::Int(i)) => *i as usize, _ => 0 };
+                            let ch = s.chars().nth(idx).map(|c| c.to_string()).unwrap_or_default();
+                            return Ok(Value::String(ch));
+                        }
+                        "concat" => {
+                            let mut res = s.clone();
+                            for arg in evaluated_args {
+                                res.push_str(&arg.to_display_string());
+                            }
+                            return Ok(Value::String(res));
+                        }
+                        "repeat" => {
+                            let count = match evaluated_args.first() { Some(Value::Int(n)) => (*n).max(0) as usize, _ => 1 };
+                            return Ok(Value::String(s.repeat(count)));
+                        }
+                        _ => {}
                     }
                 }
 
-                if method_id.name == "pop" {
-                    if let Value::Array(a) = &obj_val {
-                        return Ok(a.borrow_mut().pop().unwrap_or(Value::Null));
+                // Check DSA methods
+                if let Value::Struct { ref name, ref fields } = obj_val {
+                    if let Ok(Some(result)) = crate::dsa::handle_dsa_method(name, fields, &method_id.name, evaluated_args.clone()) {
+                        return Ok(result);
+                    }
+                    if method_id.name == "forEach" {
+                        if let Some(items) = crate::dsa::dsa_to_array(name, fields) {
+                            let cb = evaluated_args.first().cloned().unwrap_or(Value::Null);
+                            for (i, item) in items.into_iter().enumerate() {
+                                self.execute_callback(&cb, vec![item, Value::Int(i as i64)], Rc::clone(&env))?;
+                            }
+                            return Ok(Value::Null);
+                        }
                     }
                 }
 
@@ -786,6 +1163,18 @@ impl Interpreter {
                         }
                         Ok(Value::Null)
                     }
+                    Value::String(s) => {
+                        for ch in s.chars() {
+                            let loop_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                            loop_env.borrow_mut().define(&ident.name, Value::String(ch.to_string()), false);
+                            match self.execute_block(body, loop_env) {
+                                Ok(_) | Err(FlowSignal::Continue) => continue,
+                                Err(FlowSignal::Break(val)) => return Ok(val.unwrap_or(Value::Null)),
+                                Err(other) => return Err(other),
+                            }
+                        }
+                        Ok(Value::Null)
+                    }
                     Value::Int(count) => {
                         for i in 0..count {
                             let loop_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
@@ -797,6 +1186,25 @@ impl Interpreter {
                             }
                         }
                         Ok(Value::Null)
+                    }
+                    Value::Struct { ref name, ref fields } => {
+                        if let Some(items) = crate::dsa::dsa_to_array(name, fields) {
+                            for elem in items {
+                                let loop_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                                loop_env.borrow_mut().define(&ident.name, elem, false);
+                                match self.execute_block(body, loop_env) {
+                                    Ok(_) | Err(FlowSignal::Continue) => continue,
+                                    Err(FlowSignal::Break(val)) => return Ok(val.unwrap_or(Value::Null)),
+                                    Err(other) => return Err(other),
+                                }
+                            }
+                            Ok(Value::Null)
+                        } else {
+                            Err(RuntimeError::new(
+                                format!("Type {} is not iterable in 'for' loop", iter_val.type_name()),
+                                Some(*span),
+                            ).into())
+                        }
                     }
                     _ => Err(RuntimeError::new(
                         format!("Type {} is not iterable in 'for' loop", iter_val.type_name()),
@@ -869,6 +1277,31 @@ impl Interpreter {
                 Ok(Value::Struct {
                     name: name_ident.name.clone(),
                     fields: Rc::new(RefCell::new(field_map)),
+                })
+            }
+
+            Expr::Switch(target_expr, cases, default_block, _) => {
+                let target_val = self.eval_value(target_expr, Rc::clone(&env))?;
+                for case in cases {
+                    let case_val = self.eval_value(&case.value, Rc::clone(&env))?;
+                    if case_val == target_val {
+                        let case_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                        return self.execute_block(&case.body, case_env);
+                    }
+                }
+                if let Some(ref def) = default_block {
+                    let def_env = Rc::new(RefCell::new(Environment::with_parent(Rc::clone(&env))));
+                    return self.execute_block(def, def_env);
+                }
+                Ok(Value::Null)
+            }
+
+            Expr::Lambda(params, _, body, _) => {
+                Ok(Value::Function {
+                    name: None,
+                    params: params.iter().map(|p| p.name.name.clone()).collect(),
+                    body: body.clone(),
+                    closure_env: Some(Rc::clone(&env)),
                 })
             }
         }

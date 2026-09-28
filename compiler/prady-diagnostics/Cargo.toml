@@ -1,6 +1,6 @@
 [package]
 name = "prady-diagnostics"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Prady Team"]
 description = "Diagnostic and error reporting system for the Prady compiler"

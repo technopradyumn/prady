@@ -1,0 +1,104 @@
+fn main() {
+    print("=== Testing Prady v1.0.0 Features ===");
+
+    // 1. Switch Statement
+    let num = 2;
+    switch num {
+        case 1: {
+            print("Switch: One");
+        }
+        case 2: {
+            print("Switch: Two matched!");
+        }
+        default: {
+            print("Switch: Default");
+        }
+    }
+
+    // 2. Arrays & Functional Methods
+    let arr = [1, 2, 3, 4, 5];
+    let doubled = arr.map(fn(x: Int, i: Int) -> Int {
+        return x * 2;
+    });
+    print("Doubled array:");
+    print(doubled);
+
+    let evens = doubled.filter(fn(x: Int, i: Int) -> Bool {
+        return x > 4;
+    });
+    print("Filtered (> 4):");
+    print(evens);
+
+    let sum = arr.reduce(fn(acc: Int, x: Int, i: Int) -> Int {
+        return acc + x;
+    }, 0);
+    print("Reduced sum:");
+    print(sum);
+
+    // 3. For-in / For-of / Foreach Loops
+    print("Iterating with for-of loop:");
+    for (let x of [10, 20, 30]) {
+        print(x);
+    }
+
+    // 4. Map Data Structure
+    let m = Map();
+    m.set("name", "Prady");
+    m.set("version", "1.0.0");
+    print("Map name:");
+    print(m.get("name"));
+    print("Map size:");
+    print(m.size());
+
+    // 5. Set Data Structure
+    let s = Set();
+    s.add(100);
+    s.add(200);
+    s.add(100); // duplicate
+    print("Set size (should be 2):");
+    print(s.size());
+    print("Set has 200:");
+    print(s.has(200));
+
+    // 6. Stack & Queue
+    let st = Stack();
+    st.push(1);
+    st.push(2);
+    print("Stack pop:");
+    print(st.pop());
+
+    let q = Queue();
+    q.enqueue("First");
+    q.enqueue("Second");
+    print("Queue dequeue:");
+    print(q.dequeue());
+
+    // 7. MinHeap
+    let heap = MinHeap();
+    heap.insert(40);
+    heap.insert(10);
+    heap.insert(30);
+    print("MinHeap extractMin (should be 10):");
+    print(heap.extractMin());
+
+    // 8. LRUCache
+    let lru = LRUCache(2);
+    lru.put("a", 1);
+    lru.put("b", 2);
+    lru.put("c", 3); // evicts "a"
+    print("LRUCache get 'a' (should be null):");
+    print(lru.get("a"));
+    print("LRUCache get 'c' (should be 3):");
+    print(lru.get("c"));
+
+    // 9. Trie
+    let trie = Trie();
+    trie.insert("prady");
+    trie.insert("programming");
+    print("Trie search 'prady':");
+    print(trie.search("prady"));
+    print("Trie startsWith 'pro':");
+    print(trie.startsWith("pro"));
+
+    print("=== All v1.0.0 features verified! ===");
+}

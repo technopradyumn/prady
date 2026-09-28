@@ -1,6 +1,6 @@
 [package]
 name = "prady-interp"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Prady Team"]
 description = "Tree-walking interpreter and runtime engine for the Prady language"

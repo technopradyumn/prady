@@ -200,6 +200,20 @@ pub enum Stmt {
     Using(Ident, Expr, Block, Span),
 }
 
+impl Stmt {
+    pub fn span(&self) -> Span {
+        match self {
+            Stmt::Let(l) => l.span,
+            Stmt::Assign(a) => a.span,
+            Stmt::Expr(e) => e.span(),
+            Stmt::Return(_, s)
+            | Stmt::Break(_, s)
+            | Stmt::Continue(s)
+            | Stmt::Using(_, _, _, s) => *s,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct LetStmt {
     pub is_const: bool,
@@ -247,6 +261,8 @@ pub enum Expr {
     Try(Box<Expr>, Span), // expr?
     ArrayLit(Vec<Expr>, Span),
     StructLit(Ident, Vec<(Ident, Expr)>, Span),
+    Switch(Box<Expr>, Vec<SwitchCase>, Option<Block>, Span),
+    Lambda(Vec<Param>, Option<Type>, Block, Span),
 }
 
 impl Expr {
@@ -266,11 +282,20 @@ impl Expr {
             | Expr::Match(_, _, s)
             | Expr::Try(_, s)
             | Expr::ArrayLit(_, s)
-            | Expr::StructLit(_, _, s) => *s,
+            | Expr::StructLit(_, _, s)
+            | Expr::Switch(_, _, _, s)
+            | Expr::Lambda(_, _, _, s) => *s,
             Expr::Ident(id) => id.span,
             Expr::Block(b) => b.span,
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SwitchCase {
+    pub value: Expr,
+    pub body: Block,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, PartialEq)]

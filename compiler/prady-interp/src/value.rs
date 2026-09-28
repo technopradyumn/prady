@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use std::fmt;
 use std::rc::Rc;
 
-#[derive(Clone, PartialEq)]
+use crate::env::Environment;
+
+#[derive(Clone)]
 pub enum Value {
     Int(i64),
     Float(f64),
@@ -21,6 +23,12 @@ pub enum Value {
         variant_name: String,
         payload: Vec<Value>,
     },
+    Function {
+        name: Option<String>,
+        params: Vec<String>,
+        body: prady_ast::Block,
+        closure_env: Option<Rc<RefCell<Environment>>>,
+    },
 }
 
 impl Value {
@@ -35,6 +43,7 @@ impl Value {
             Value::Array(arr) => !arr.borrow().is_empty(),
             Value::Struct { .. } => true,
             Value::Variant { .. } => true,
+            Value::Function { .. } => true,
         }
     }
 
@@ -47,8 +56,40 @@ impl Value {
             Value::Char(_) => "Char",
             Value::Null => "Null",
             Value::Array(_) => "Array",
-            Value::Struct { .. } => "Struct",
+            Value::Struct { name, .. } => {
+                match name.as_str() {
+                    "Map" => "Map",
+                    "Set" => "Set",
+                    "Stack" => "Stack",
+                    "Queue" => "Queue",
+                    "Deque" => "Deque",
+                    "MinHeap" | "PriorityQueue" => "MinHeap",
+                    "MaxHeap" => "MaxHeap",
+                    "LinkedList" => "LinkedList",
+                    "DoublyLinkedList" => "DoublyLinkedList",
+                    "BST" | "BinarySearchTree" => "BinarySearchTree",
+                    "AVLTree" => "AVLTree",
+                    "RedBlackTree" => "RedBlackTree",
+                    "Trie" => "Trie",
+                    "Graph" => "Graph",
+                    "LRUCache" => "LRUCache",
+                    "LFUCache" => "LFUCache",
+                    "CircularBuffer" => "CircularBuffer",
+                    "BloomFilter" => "BloomFilter",
+                    "DisjointSet" | "UnionFind" => "DisjointSet",
+                    "SegmentTree" => "SegmentTree",
+                    "FenwickTree" => "FenwickTree",
+                    "BitSet" => "BitSet",
+                    "SkipList" => "SkipList",
+                    "Matrix" => "Matrix",
+                    "SparseMatrix" => "SparseMatrix",
+                    "TreeMap" => "TreeMap",
+                    "TreeSet" => "TreeSet",
+                    _ => "Struct",
+                }
+            }
             Value::Variant { .. } => "Variant",
+            Value::Function { .. } => "Function",
         }
     }
 
@@ -56,6 +97,48 @@ impl Value {
         match self {
             Value::String(s) => s.clone(),
             other => other.to_string(),
+        }
+    }
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Value::Int(a), Value::Int(b)) => a == b,
+            (Value::Float(a), Value::Float(b)) => a == b,
+            (Value::String(a), Value::String(b)) => a == b,
+            (Value::Bool(a), Value::Bool(b)) => a == b,
+            (Value::Char(a), Value::Char(b)) => a == b,
+            (Value::Null, Value::Null) => true,
+            (Value::Array(a), Value::Array(b)) => Rc::ptr_eq(a, b) || *a.borrow() == *b.borrow(),
+            (Value::Struct { name: n1, fields: f1 }, Value::Struct { name: n2, fields: f2 }) => {
+                n1 == n2 && (Rc::ptr_eq(f1, f2) || *f1.borrow() == *f2.borrow())
+            }
+            (
+                Value::Variant {
+                    enum_name: e1,
+                    variant_name: v1,
+                    payload: p1,
+                },
+                Value::Variant {
+                    enum_name: e2,
+                    variant_name: v2,
+                    payload: p2,
+                },
+            ) => e1 == e2 && v1 == v2 && p1 == p2,
+            (
+                Value::Function {
+                    name: n1,
+                    params: p1,
+                    ..
+                },
+                Value::Function {
+                    name: n2,
+                    params: p2,
+                    ..
+                },
+            ) => n1 == n2 && p1 == p2,
+            _ => false,
         }
     }
 }
@@ -89,6 +172,9 @@ impl fmt::Display for Value {
                 write!(f, "{} {{ ", name)?;
                 let mut first = true;
                 for (k, v) in borrowed.iter() {
+                    if k.starts_with('_') {
+                        continue;
+                    }
                     if !first {
                         write!(f, ", ")?;
                     }
@@ -113,6 +199,13 @@ impl fmt::Display for Value {
                         write!(f, "{}", p)?;
                     }
                     write!(f, ")")
+                }
+            }
+            Value::Function { name, params, .. } => {
+                if let Some(n) = name {
+                    write!(f, "<fn {}>", n)
+                } else {
+                    write!(f, "<fn ({})>", params.join(", "))
                 }
             }
         }

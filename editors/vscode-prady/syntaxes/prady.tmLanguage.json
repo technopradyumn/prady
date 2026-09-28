@@ -68,7 +68,7 @@
       "patterns": [
         {
           "name": "keyword.control.prady",
-          "match": "\\b(if|else|while|for|in|loop|return|break|continue|match|yield|try|catch|throw)\\b"
+          "match": "\\b(if|else|while|for|foreach|of|in|switch|case|default|loop|return|break|continue|match|yield|try|catch|throw)\\b"
         },
         {
           "name": "keyword.declaration.prady",
@@ -88,7 +88,7 @@
         },
         {
           "name": "support.type.container.prady",
-          "match": "\\b(Option|Result|Array|List|Map|Set|Vec|Tuple)\\b"
+          "match": "\\b(Option|Result|Array|List|Map|Set|Vec|Tuple|Stack|Queue|Deque|MinHeap|MaxHeap|LinkedList|DoublyLinkedList|BST|AVLTree|RedBlackTree|Trie|Graph|LRUCache|LFUCache|CircularBuffer|BloomFilter|DisjointSet|SegmentTree|FenwickTree|BitSet|SkipList|Matrix|SparseMatrix|TreeMap|TreeSet)\\b"
         },
         {
           "name": "entity.name.type.prady",

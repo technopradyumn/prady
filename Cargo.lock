@@ -16,14 +16,14 @@ checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
 name = "prady-ast"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "prady-diagnostics",
 ]
 
 [[package]]
 name = "prady-cli"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "prady-ast",
  "prady-diagnostics",
@@ -34,11 +34,11 @@ dependencies = [
 
 [[package]]
 name = "prady-diagnostics"
-version = "0.1.0"
+version = "1.0.0"
 
 [[package]]
 name = "prady-interp"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "prady-ast",
  "prady-diagnostics",
@@ -48,14 +48,14 @@ dependencies = [
 
 [[package]]
 name = "prady-lexer"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "prady-diagnostics",
 ]
 
 [[package]]
 name = "prady-lsp"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "prady-ast",
  "prady-diagnostics",
@@ -67,7 +67,7 @@ dependencies = [
 
 [[package]]
 name = "prady-parser"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "prady-ast",
  "prady-diagnostics",

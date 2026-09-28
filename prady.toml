@@ -1,6 +1,6 @@
 [package]
 name = "prady-core"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Pradyumn", "Antigravity Team"]
 license = "MIT OR Apache-2.0"
 description = "Prady Programming Language core project manifest"
@@ -24,3 +24,7 @@ require_interfaces_for_external_services = true
 deny_hardcoded_secrets = true
 deny_unsafe = true
 require_https = true
+
+[dependencies]
+math = "1.0.0"
+lodash-pr = "1.0.0"

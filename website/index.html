@@ -1,549 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prady Programming Language — Portal, Docs & Live Studio</title>
-  <meta name="description" content="Official documentation, device installation guide, version roadmap, and interactive live studio for the Prady programming language (.pr).">
+  <title>Prady Documentation (v1.0.0 GA) — MDN Web Docs Reference</title>
+  <meta name="description" content="Official MDN-style technical documentation and reference for the Prady Programming Language (v1.0.0 GA). Complete guide to all 28 data structures, switch, foreach, lambdas, and architecture-as-code.">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="icon.png">
 </head>
 <body>
 
-  <!-- Top Global Header -->
-  <header>
-    <div class="logo-group">
-      <span class="logo-badge">.pr</span>
-      <span class="logo-title">Prady Language</span>
-      <span class="logo-version-tag">v0.1.0</span>
+  <!-- Classical MDN Global Navigation Header -->
+  <header class="mdn-header">
+    <div class="header-left">
+      <a href="#guide-getting-started" class="brand-logo" id="header-brand-logo">
+        <span class="brand-tag">.pr</span>
+        <span>Prady Docs</span>
+      </a>
+      <span class="version-pill">v1.0.0 GA</span>
     </div>
 
-    <!-- Main Navigation Bar -->
-    <nav class="nav-links" aria-label="Main Navigation">
-      <button class="nav-link active" data-screen="screen-dashboard" id="nav-dashboard">
-        <span class="nav-icon">📊</span> Dashboard
-      </button>
-      <button class="nav-link" data-screen="screen-studio" id="nav-studio">
-        <span class="nav-icon">⚡</span> Live Studio
-      </button>
-      <button class="nav-link" data-screen="screen-install" id="nav-install">
-        <span class="nav-icon">📥</span> Install & Download
-      </button>
-      <button class="nav-link" data-screen="screen-docs" id="nav-docs">
-        <span class="nav-icon">📖</span> Documentation
-      </button>
-      <button class="nav-link" data-screen="screen-versions" id="nav-versions">
-        <span class="nav-icon">📜</span> Releases & Updates
-      </button>
-    </nav>
+    <!-- Search box with '/' shortcut -->
+    <div class="header-search">
+      <input type="text" id="search-input" placeholder="Search documentation... (Press '/' to focus)" autocomplete="off">
+      <span class="search-shortcut">/</span>
+    </div>
 
-    <div class="header-cta">
-      <button id="quick-run-btn" class="btn btn-primary" title="Launch Interactive Live Compiler">
-        <span>▶</span> Open Studio
-      </button>
+    <!-- Navigation actions & Theme toggle -->
+    <div class="header-right">
+      <button class="nav-tab-btn active" id="tab-btn-docs">Documentation</button>
+      <button class="nav-tab-btn" id="tab-btn-playground">Interactive Playground</button>
+      <button class="btn-icon" id="theme-toggle-btn" title="Toggle Light/Dark Theme">Theme</button>
+      <a href="https://github.com/technopradyumn/prady" target="_blank" rel="noopener" class="btn btn-sm">GitHub</a>
     </div>
   </header>
 
-  <!-- SCREEN 1: DASHBOARD / HOMESCREEN -->
-  <section id="screen-dashboard" class="screen-view active">
-    <!-- Hero Banner -->
-    <div class="hero-section">
-      <div class="hero-badge">
-        <span class="status-dot"></span> Prady 0.1.0 Ready — Native, Statically Typed & Safe
-      </div>
-      <h1 class="hero-title">
-        The Systems Language Designed for <br>
-        <span class="gradient-text">High Performance & Clean Architecture</span>
-      </h1>
-      <p class="hero-subtitle">
-        Prady (<code>.pr</code>) compiles to native machine code without garbage collection overhead, 
-        features native Architecture-as-Code layer policy verification, and includes rich compiler diagnostics.
-      </p>
+  <!-- Main Body Layout -->
+  <div class="mdn-layout">
+    
+    <!-- Left Navigation Sidebar -->
+    <aside class="mdn-sidebar" aria-label="Documentation Navigation">
+      <nav id="sidebar-navigation">
+        <!-- Injected dynamically by TypeScript app -->
+      </nav>
+    </aside>
 
-      <div class="hero-buttons">
-        <button class="btn btn-hero-primary" onclick="switchScreen('screen-studio')">
-          <span>⚡</span> Launch In-Browser Studio
-        </button>
-        <button class="btn btn-hero-secondary" onclick="switchScreen('screen-install')">
-          <span>📥</span> Download Compiler for Your Device
-        </button>
-        <button class="btn btn-hero-outline" onclick="switchScreen('screen-docs')">
-          <span>📖</span> Explore Documentation
-        </button>
-      </div>
-    </div>
+    <!-- Main Content: Documentation Article -->
+    <main class="mdn-content-area" id="doc-article-container">
+      <!-- Injected dynamically by TypeScript app -->
+    </main>
 
-    <!-- Metrics & Feature Highlights -->
-    <div class="dashboard-grid">
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(0, 245, 255, 0.1); color: var(--neon-cyan);">⚡</div>
-        <h3>Native Performance & Zero GC</h3>
-        <p>Built with Rust and targeting LLVM native machine code. Deterministic resource cleanup with predictable zero-pause execution.</p>
-        <div class="card-tag">LLVM Pipeline</div>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(168, 85, 247, 0.1); color: var(--neon-purple);">🏛️</div>
-        <h3>Architecture as Code</h3>
-        <p>Declare layer policies directly in source code. Enforce clean separation and reject forbidden dependency imports at compile time.</p>
-        <div class="card-tag">Policy Validation</div>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--neon-emerald);">🛡️</div>
-        <h3>Safety & Immutability First</h3>
-        <p>Variables are immutable by default. Strict explicit <code>mut</code>, explicit <code>Option&lt;T&gt;</code> / <code>Result&lt;T, E&gt;</code>, and no unhandled null pointers.</p>
-        <div class="card-tag">Safe by Default</div>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--neon-amber);">🔍</div>
-        <h3>Rich ANSI Diagnostics</h3>
-        <p>Rust-grade error reporting with exact line and column spans, visual caret pointers, and actionable compiler suggestions.</p>
-        <div class="card-tag">Developer Ergonomics</div>
-      </div>
-    </div>
-
-    <!-- Quick Preview Code Banner -->
-    <div class="dashboard-code-preview">
-      <div class="preview-header">
-        <div class="window-dots">
-          <span></span><span></span><span></span>
+    <!-- Alternative View: Interactive Playground -->
+    <div id="playground-view" class="hidden">
+      <div class="pg-toolbar">
+        <div class="pg-toolbar-left">
+          <span class="pg-title">Prady Live Compiler & Playground (v1.0.0 GA)</span>
         </div>
-        <span class="preview-filename">examples/architecture_preview.pr</span>
-        <button class="btn btn-secondary btn-sm" onclick="loadAndLaunch('architecture')">
-          <span>⚡</span> Run This in Studio
-        </button>
+        <div class="pg-toolbar-right">
+          <button class="btn btn-sm" id="pg-reset-btn">Reset to Example</button>
+          <button class="btn btn-primary btn-sm" id="pg-run-btn">Run Code (Ctrl+Enter)</button>
+        </div>
       </div>
-      <pre class="preview-code-block"><code><span class="code-comment">// Prady Architecture as Code Declaration</span>
-<span class="code-keyword">architecture</span> <span class="code-type">EnterpriseBackend</span> {
-    <span class="code-keyword">layer</span> presentation;
-    <span class="code-keyword">layer</span> application;
-    <span class="code-keyword">layer</span> domain;
-    <span class="code-keyword">layer</span> infrastructure;
+      <div class="pg-split-container">
+        <div class="pg-editor-pane">
+          <div class="pane-label">
+            <span>Editor (Prady v1.0.0)</span>
+            <span>UTF-8</span>
+          </div>
+          <textarea id="playground-editor" spellcheck="false">// Welcome to Prady v1.0.0 GA Interactive Playground
+fn main() {
+    print("Welcome to Prady v1.0.0 GA!");
 
-    presentation -> application;
-    application -> domain;
-    infrastructure -> domain;
+    // 1. Array with Higher-Order Methods
+    let numbers = [1, 2, 3, 4, 5, 6];
+    let evens = numbers.filter(fn(x: Int, i: Int) -> Bool {
+        return x % 2 == 0;
+    });
+    print("Evens: " + evens.join(", "));
 
-    domain <span class="code-keyword">cannot import</span> presentation;
-    domain <span class="code-keyword">cannot import</span> infrastructure;
+    let doubled = evens.map(fn(x: Int, i: Int) -> Int {
+        return x * 10;
+    });
+    print("Doubled evens: " + doubled.join(", "));
+
+    // 2. TypeScript-Style Switch Statement
+    let status = 200;
+    switch (status) {
+        case 200:
+            print("Status 200: OK - Request succeeded.");
+            break;
+        case 404:
+            print("Status 404: Not Found.");
+            break;
+        default:
+            print("Unknown status code.");
+    }
+
+    // 3. Data Structures: Stack & LRU Cache
+    let s = Stack();
+    s.push(10);
+    s.push(20);
+    s.push(30);
+    print("Stack peek: " + s.peek());
+    print("Stack pop: " + s.pop());
+
+    let cache = LRUCache(2);
+    cache.put("user_1", "Alice");
+    cache.put("user_2", "Bob");
+    print("LRU Cache get user_1: " + cache.get("user_1"));
+
+    // 4. For-of Loop
+    let fruits = ["Apple", "Orange", "Mango"];
+    for (let f of fruits) {
+        print("Fruit: " + f);
+    }
 }
-
-<span class="code-keyword">fn</span> <span class="code-func">main</span>() {
-    <span class="code-builtin">print</span>(<span class="code-str">"Architecture layer boundaries validated at compile time."</span>);
-}</code></pre>
-    </div>
-  </section>
-
-  <!-- SCREEN 2: LIVE STUDIO & PLAYGROUND -->
-  <section id="screen-studio" class="screen-view">
-    <div class="studio-toolbar">
-      <div class="select-wrapper">
-        <select id="example-select" class="dropdown" aria-label="Select Code Example">
-          <option value="hello">Example: Hello & Functions</option>
-          <option value="architecture">Example: Clean Architecture</option>
-          <option value="dsa">Example: DSA (Fibonacci Algorithm)</option>
-          <option value="oop">Example: OOP & Composition</option>
-          <option value="patterns">Example: Pattern Matching & Enums</option>
-        </select>
-      </div>
-
-      <div class="studio-actions">
-        <button id="btn-check" class="btn btn-secondary" title="Verify syntax and compiler diagnostics">
-          <span>🔍</span> Check
-        </button>
-        <button id="btn-run" class="btn btn-primary" title="Execute program (Ctrl + Enter)">
-          <span>▶</span> Run Code
-        </button>
-        <button id="btn-share" class="btn btn-outline" title="Copy shareable link">
-          <span>🔗</span> Share Link
-        </button>
-        <button id="btn-download" class="btn btn-outline" title="Download .pr file">
-          <span>📥</span> Download .pr
-        </button>
-        <button id="btn-copy-cli" class="btn btn-outline" title="Copy CLI command">
-          <span>💻</span> CLI Run
-        </button>
-      </div>
-    </div>
-
-    <div class="studio-split">
-      <!-- Code Editor Section -->
-      <section class="panel editor-panel" aria-label="Code Editor">
-        <div class="panel-header">
-          <div class="panel-title">
-            <span class="indicator"></span>
-            <span>main.pr</span>
-          </div>
-          <div style="font-size:12px; color:var(--text-muted);">
-            Shortcut: <kbd>Ctrl+Enter</kbd> to run
-          </div>
+</textarea>
         </div>
-
-        <div class="editor-container">
-          <pre id="line-numbers" class="line-numbers" aria-hidden="true">1</pre>
-          <textarea id="code-input" spellcheck="false" placeholder="// Type Prady code here..."></textarea>
-        </div>
-      </section>
-
-      <!-- Compiler Outputs Section -->
-      <section class="panel output-panel" aria-label="Compiler Output">
-        <div class="panel-header">
-          <div class="tab-bar">
-            <button id="tab-console-btn" class="tab-btn active" data-tab="tab-console">Terminal</button>
-            <button id="tab-tokens-btn" class="tab-btn" data-tab="tab-tokens">Tokens</button>
-            <button id="tab-ast-btn" class="tab-btn" data-tab="tab-ast">AST</button>
-            <button id="tab-arch-btn" class="tab-btn" data-tab="tab-arch">Architecture</button>
+        <div class="pg-output-pane">
+          <div class="pane-label">
+            <span>Terminal Output</span>
+            <span id="playground-timing">Ready</span>
           </div>
-          <span style="font-size:12px; color:var(--text-muted);">In-Browser Runtime</span>
-        </div>
-
-        <div class="output-content">
-          <div id="tab-console" class="tab-pane active">
-            <div id="console-output"></div>
-          </div>
-          <div id="tab-tokens" class="tab-pane">
-            <div id="tokens-output"></div>
-          </div>
-          <div id="tab-ast" class="tab-pane">
-            <pre id="ast-output" class="ast-view"></pre>
-          </div>
-          <div id="tab-arch" class="tab-pane">
-            <div id="arch-output"></div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </section>
-
-  <!-- SCREEN 3: INSTALLATION & DOWNLOAD GUIDE -->
-  <section id="screen-install" class="screen-view">
-    <div class="docs-container">
-      <div class="page-header">
-        <span class="section-tag">Cross-Platform Toolchain</span>
-        <h2>How to Install & Run Prady on Any Device</h2>
-        <p>Prady provides a native CLI toolchain (`prady`) that can be installed on Windows, macOS, or Linux in minutes.</p>
-      </div>
-
-      <!-- OS Tabs -->
-      <div class="os-selector-tabs">
-        <button class="os-tab active" data-os="win" onclick="switchOsTab('win')">🪟 Windows (PowerShell / CMD)</button>
-        <button class="os-tab" data-os="mac" onclick="switchOsTab('mac')">🍎 macOS (Apple Silicon / Intel)</button>
-        <button class="os-tab" data-os="linux" onclick="switchOsTab('linux')">🐧 Linux (Ubuntu / Debian / Arch)</button>
-      </div>
-
-      <!-- Windows Guide -->
-      <div id="guide-win" class="os-guide-content active">
-        <div class="step-card">
-          <div class="step-number">1</div>
-          <div class="step-body">
-            <h3>Install Prady Globally with One Command</h3>
-            <p>If you have Rust and Cargo installed, run this anywhere in PowerShell or Command Prompt:</p>
-            <div class="code-box">
-              <code>cargo install --git https://github.com/technopradyumn/prady prady-cli</code>
-              <button class="copy-btn" onclick="copySnippet('cargo install --git https://github.com/technopradyumn/prady prady-cli')">Copy</button>
-            </div>
-            <p style="margin-top:8px; font-size:13px; color:var(--text-muted);">
-              Or if you have the repository cloned locally on your laptop:
-            </p>
-            <div class="code-box">
-              <code>cargo install --path compiler/prady-cli --force</code>
-              <button class="copy-btn" onclick="copySnippet('cargo install --path compiler/prady-cli --force')">Copy</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="step-card">
-          <div class="step-number">2</div>
-          <div class="step-body">
-            <h3>Verify Environment with <code>prady doctor</code></h3>
-            <p>Open any terminal and confirm the compiler diagnostic doctor is active:</p>
-            <div class="code-box">
-              <code>prady doctor</code>
-              <button class="copy-btn" onclick="copySnippet('prady doctor')">Copy</button>
-            </div>
-            <div class="terminal-preview">
-              Prady Environment Doctor<br>
-              OS Target: Windows x86_64<br>
-              Language Specification: Prady 0.1.0<br>
-              ✓ Host Rustc: Active<br>
-              ✓ Prady Lexer Engine: Active<br>
-              ✓ Prady AST & Visitor: Active<br>
-              ✓ Prady Pratt Parser: Active
-            </div>
-          </div>
-        </div>
-
-        <div class="step-card">
-          <div class="step-number">3</div>
-          <div class="step-body">
-            <h3>Create & Run Your First Project</h3>
-            <p>Scaffold a new CLI project with Clean Architecture scaffolding:</p>
-            <div class="code-box">
-              <code>prady new cli my_app --arch clean<br>cd my_app<br>prady run src/main.pr</code>
-              <button class="copy-btn" onclick="copySnippet('prady new cli my_app --arch clean; cd my_app; prady run src/main.pr')">Copy</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="step-card">
-          <div class="step-number">4</div>
-          <div class="step-body">
-            <h3>VS Code / Antigravity IDE Extension Setup</h3>
-            <p>Enable colored syntax highlighting, Prettier formatting, error detection, and Code Runner:</p>
-            <ul class="guide-list">
-              <li><strong>Syntax Colors:</strong> Install the <code>prady-lang</code> extension located in <code>editors/vscode-prady</code>.</li>
-              <li><strong>Code Runner:</strong> Press <code>Ctrl + Alt + N</code> or click the Play button to run any <code>.pr</code> file directly.</li>
-              <li><strong>Error Detector:</strong> Press <code>Ctrl + Shift + B</code> to run <code>prady check</code>; errors underline in red and list in the Problems tab.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- macOS Guide -->
-      <div id="guide-mac" class="os-guide-content">
-        <div class="step-card">
-          <div class="step-number">1</div>
-          <div class="step-body">
-            <h3>Install on macOS via Terminal</h3>
-            <div class="code-box">
-              <code>cargo install --git https://github.com/technopradyumn/prady prady-cli</code>
-              <button class="copy-btn" onclick="copySnippet('cargo install --git https://github.com/technopradyumn/prady prady-cli')">Copy</button>
-            </div>
-          </div>
-        </div>
-        <div class="step-card">
-          <div class="step-number">2</div>
-          <div class="step-body">
-            <h3>Check Version</h3>
-            <div class="code-box">
-              <code>prady version</code>
-              <button class="copy-btn" onclick="copySnippet('prady version')">Copy</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Linux Guide -->
-      <div id="guide-linux" class="os-guide-content">
-        <div class="step-card">
-          <div class="step-number">1</div>
-          <div class="step-body">
-            <h3>Install on Linux (Ubuntu / Fedora / Arch)</h3>
-            <div class="code-box">
-              <code>cargo install --git https://github.com/technopradyumn/prady prady-cli</code>
-              <button class="copy-btn" onclick="copySnippet('cargo install --git https://github.com/technopradyumn/prady prady-cli')">Copy</button>
-            </div>
-          </div>
+          <div class="stdout-output" id="playground-output">Click "Run Code" above to execute.</div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- SCREEN 4: DETAILED DOCUMENTATION -->
-  <section id="screen-docs" class="screen-view">
-    <div class="docs-layout">
-      <!-- Sidebar TOC -->
-      <aside class="docs-sidebar">
-        <h4>Language Reference</h4>
-        <a href="#doc-getting-started" class="docs-nav-item active">1. Getting Started</a>
-        <a href="#doc-variables" class="docs-nav-item">2. Variables & Mutability</a>
-        <a href="#doc-types" class="docs-nav-item">3. Type System</a>
-        <a href="#doc-functions" class="docs-nav-item">4. Functions & Returns</a>
-        <a href="#doc-arch" class="docs-nav-item">5. Architecture as Code</a>
-        <a href="#doc-oop" class="docs-nav-item">6. OOP & Composition</a>
-        <a href="#doc-dsa" class="docs-nav-item">7. Built-in DSA Suite</a>
-        <a href="#doc-cli" class="docs-nav-item">8. CLI Command Matrix</a>
-      </aside>
+  </div>
 
-      <!-- Main Docs Content -->
-      <div class="docs-article">
-        <section id="doc-getting-started">
-          <h2>1. Getting Started with Prady</h2>
-          <p>
-            Prady source files end with the <code>.pr</code> extension. Every executable program begins execution at <code>fn main()</code>:
-          </p>
-          <div class="code-box">
-            <code>// main.pr<br>fn main() {<br>    print("Hello from Prady!");<br>}</code>
-          </div>
-          <p>Run your file with: <code>prady run main.pr</code></p>
-        </section>
-
-        <section id="doc-variables">
-          <h2>2. Variables & Mutability</h2>
-          <p>In Prady, all variables are <strong>immutable by default</strong>. If you intend to reassign or mutate a variable, you must explicitly declare it with <code>mut</code>:</p>
-          <div class="code-box">
-            <code>let x: Int = 10;       // Immutable variable<br>let mut counter = 0;   // Mutable variable<br>counter += 1;          // Valid<br>// x = 20;             // Compile-time error: cannot reassign immutable</code>
-          </div>
-        </section>
-
-        <section id="doc-types">
-          <h2>3. Type System</h2>
-          <p>Prady provides rich native scalar types and container monads:</p>
-          <table class="docs-table">
-            <thead>
-              <tr><th>Type Category</th><th>Types</th><th>Description</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><strong>Integers</strong></td><td><code>Int, Int8, Int16, Int32, Int64</code></td><td>Signed platform & fixed width integers</td></tr>
-              <tr><td><strong>Unsigned</strong></td><td><code>UInt, UInt8, UInt16, UInt32, UInt64</code></td><td>Unsigned integers for byte buffers & memory</td></tr>
-              <tr><td><strong>Floating</strong></td><td><code>Float, Float32, Float64</code></td><td>IEEE 754 precision decimals</td></tr>
-              <tr><td><strong>Text & Logic</strong></td><td><code>String, Char, Bool</code></td><td>UTF-8 strings and booleans</td></tr>
-              <tr><td><strong>Monads</strong></td><td><code>Option&lt;T&gt;, Result&lt;T, E&gt;</code></td><td>Explicit absence and safe error handling without nulls</td></tr>
-            </tbody>
-          </table>
-        </section>
-
-        <section id="doc-functions">
-          <h2>4. Functions & Returns</h2>
-          <p>Functions are declared with <code>fn</code>, typed parameters, and an explicit return type via <code>-&gt;</code>:</p>
-          <div class="code-box">
-            <code>fn multiply(a: Int, b: Int) -> Int {<br>    return a * b;<br>}</code>
-          </div>
-        </section>
-
-        <section id="doc-arch">
-          <h2>5. Architecture as Code</h2>
-          <p>Prady allows software teams to declare architectural policies right inside the code. The compiler enforces that layer boundaries are strictly observed:</p>
-          <div class="code-box">
-            <code>architecture backend {<br>    layer presentation;<br>    layer application;<br>    layer domain;<br>    layer infrastructure;<br><br>    presentation -> application;<br>    application -> domain;<br>    infrastructure -> domain;<br><br>    domain cannot import presentation;<br>    domain cannot import infrastructure;<br>}</code>
-          </div>
-        </section>
-
-        <section id="doc-oop">
-          <h2>6. OOP, Structs & Interfaces</h2>
-          <p>Prady champions composition over inheritance through interfaces and classes:</p>
-          <div class="code-box">
-            <code>interface PaymentGateway {<br>    fn charge(amount: Int) -> Bool;<br>}<br><br>class CheckoutService {<br>    gateway: PaymentGateway;<br><br>    fn new(gateway: PaymentGateway) -> CheckoutService {<br>        return CheckoutService { gateway };<br>    }<br>}</code>
-          </div>
-        </section>
-
-        <section id="doc-dsa">
-          <h2>7. Built-in DSA Suite</h2>
-          <p>Prady comes with 28 core data structures and standard algorithm suites with documented Big-O complexity guarantees:</p>
-          <ul class="guide-list">
-            <li><strong>Sequences:</strong> Array, List, LinkedList, DoublyLinkedList, Deque</li>
-            <li><strong>Trees & Graphs:</strong> BST, AVLTree, RedBlackTree, Trie, Graph (BFS/DFS, Dijkstra)</li>
-            <li><strong>Sets & Maps:</strong> HashMap, HashSet, TreeMap, TreeSet, LRUCache</li>
-          </ul>
-        </section>
-
-        <section id="doc-cli">
-          <h2>8. CLI Command Matrix</h2>
-          <table class="docs-table">
-            <thead>
-              <tr><th>Command</th><th>Purpose</th><th>Example</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><code>prady run &lt;file.pr&gt;</code></td><td>Verify and execute a Prady program</td><td><code>prady run main.pr</code></td></tr>
-              <tr><td><code>prady check &lt;file.pr&gt;</code></td><td>Run syntax and type validation</td><td><code>prady check src/lib.pr</code></td></tr>
-              <tr><td><code>prady ast &lt;file.pr&gt;</code></td><td>Inspect the Abstract Syntax Tree</td><td><code>prady ast main.pr</code></td></tr>
-              <tr><td><code>prady tokens &lt;file.pr&gt;</code></td><td>Dump lexer token stream with spans</td><td><code>prady tokens main.pr</code></td></tr>
-              <tr><td><code>prady new &lt;tmpl&gt; &lt;name&gt;</code></td><td>Scaffold a new project</td><td><code>prady new cli my_tool --arch clean</code></td></tr>
-              <tr><td><code>prady doctor</code></td><td>Verify compiler toolchain status</td><td><code>prady doctor</code></td></tr>
-            </tbody>
-          </table>
-        </section>
-      </div>
-    </div>
-  </section>
-
-  <!-- SCREEN 5: VERSION HISTORY & ROADMAP -->
-  <section id="screen-versions" class="screen-view">
-    <div class="docs-container">
-      <div class="page-header">
-        <span class="section-tag">Release Engineering</span>
-        <h2>Version History & Engineering Roadmap</h2>
-        <p>Prady follows strict semantic versioning and comprehensive engineering gates.</p>
-      </div>
-
-      <!-- Current Version Card -->
-      <div class="version-banner">
-        <div class="version-header">
-          <div class="version-badge-active">v0.1.0 (Current Stable)</div>
-          <span class="version-date">Released: September 2026</span>
-        </div>
-        <h3>Phase 1: Foundations & Front-End Core</h3>
-        <p>Initial release establishing complete compiler front-end, diagnostics, tooling, and developer ecosystem.</p>
-        <ul class="version-feature-list">
-          <li>✓ <strong>Lexer Engine:</strong> Full tokenization with precise line/column spans, numbers, strings, comments, and keywords.</li>
-          <li>✓ <strong>Pratt Parser:</strong> Operator precedence expressions, statements, functions, classes, and architecture blocks.</li>
-          <li>✓ <strong>AST & Visitor:</strong> Strongly typed Abstract Syntax Tree with complete AST printer.</li>
-          <li>✓ <strong>Diagnostic Bag:</strong> Rust-style ANSI diagnostics with colored headers, code spans, caret pointers, and notes.</li>
-          <li>✓ <strong>Prady CLI:</strong> Cross-platform executable supporting <code>check</code>, <code>ast</code>, <code>tokens</code>, <code>run</code>, <code>new</code>, <code>doctor</code>.</li>
-          <li>✓ <strong>VS Code Support:</strong> Extension with TextMate syntax highlighting, Code Runner, and problem matchers.</li>
-          <li>✓ <strong>Live Browser Studio:</strong> Interactive in-browser compiler, AST viewer, token inspector, and sharing.</li>
-        </ul>
-      </div>
-
-      <!-- Roadmap Timeline -->
-      <div class="roadmap-timeline">
-        <div class="timeline-item">
-          <div class="timeline-marker">v0.2.0</div>
-          <div class="timeline-content">
-            <h4>Phase 2: Name Resolution & Semantic Core</h4>
-            <p>Symbol tables, lexical scopes, primitive type checking (<code>Int8..64</code>, <code>Float32..64</code>, <code>String</code>, <code>Bool</code>), function signature validation, and tree-walking evaluator.</p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">v0.3.0</div>
-          <div class="timeline-content">
-            <h4>Phase 3: Native Backend & LLVM Codegen</h4>
-            <p>LLVM IR generation from Prady IR, O0-O3 optimization passes, platform linker integration (<code>lld</code> / MSVC), and standalone native executable generation.</p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">v0.4.0</div>
-          <div class="timeline-content">
-            <h4>Phase 4: Pattern Matching, Generics & Monads</h4>
-            <p>Algebraic data types (<code>enum</code> with payloads), exhaustive <code>match</code> expressions, generic type parameters, and the <code>?</code> error propagation operator.</p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">v0.5.0</div>
-          <div class="timeline-content">
-            <h4>Phase 5: Complete DSA Standard Library</h4>
-            <p>28 production-grade data structures (Heaps, Trees, Graphs, LRU Cache) and full algorithmic suites with documented Big-O time and space complexity.</p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">v0.6.0</div>
-          <div class="timeline-content">
-            <h4>Phase 6: OOP & SOLID Quality Engine</h4>
-            <p>Compile-time SOLID heuristic analyzers (SRP, OCP, LSP, ISP, DIP), cyclomatic complexity limits, and automated architecture policy enforcement.</p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">v1.0.0</div>
-          <div class="timeline-content">
-            <h4>Phase 10: General Availability (GA)</h4>
-            <p>Enterprise production grade, package manager registry (<code>prady add</code>), language server protocol (LSP), and debugger integration.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Global Footer -->
-  <footer>
-    <div class="status-item">
-      <span class="status-dot"></span>
-      <span>Prady Engine: Ready (v0.1.0)</span>
-    </div>
-    <div>Target: WebAssembly & Native x86_64 | Extension: <strong>.pr</strong></div>
-    <div>Open Source: MIT OR Apache-2.0</div>
-  </footer>
-
-  <!-- Notification Toast -->
-  <div id="toast" role="status" aria-live="polite"></div>
-
-  <!-- Scripts -->
-  <script src="prady-engine.js"></script>
-  <script src="app.js"></script>
+  <!-- Pure TypeScript compiled bundle -->
+  <script type="module" src="./dist/app.js"></script>
 </body>
 </html>
