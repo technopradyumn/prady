@@ -77,7 +77,17 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
     for d in diag_bag.diagnostics() {
         let sev = if d.is_error() { 1u32 } else { 2u32 };
         let (sl, sc) = lsp_pos(&source, d.span.start);
-        let (el, ec) = lsp_pos(&source, d.span.end.max(d.span.start));
+        let (mut el, mut ec) = lsp_pos(&source, d.span.end.max(d.span.start));
+        if sl == el && ec <= sc {
+            ec = sc + 1;
+        }
+        let mut msg = d.message.clone();
+        for sug in &d.suggestions {
+            msg.push_str(&format!("\nhelp: {}", sug));
+        }
+        for note in &d.notes {
+            msg.push_str(&format!("\nnote: {}", note));
+        }
         let mut obj = json!({
             "range": {
                 "start": { "line": sl, "character": sc },
@@ -85,7 +95,7 @@ fn analyse(uri: &str, text: &str) -> (Value, Vec<SymbolDef>) {
             },
             "severity": sev,
             "source": "prady",
-            "message": d.message
+            "message": msg
         });
         if let Some(code) = &d.code {
             obj["code"] = json!(code);
@@ -263,7 +273,7 @@ impl Server {
                             "workspaceDiagnostics": false
                         }
                     },
-                    "serverInfo": { "name": "prady-lsp", "version": "0.1.0" }
+                    "serverInfo": { "name": "prady-lsp", "version": "1.0.0" }
                 }));
             }
 

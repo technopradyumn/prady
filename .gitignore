@@ -5,10 +5,9 @@ compiler/*/target/
 # Cargo lock (keep for binary crates — prady-cli)
 # Cargo.lock  # kept intentionally for reproducible CLI builds
 
-# VS Code extension build artifacts
-editors/vscode-prady/*.vsix
-editors/vscode-prady/out/
-editors/vscode-prady/node_modules/
+# Separate repositories
+/website/
+/editors/
 
 # OS / editor noise
 .DS_Store
