@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="icon.png" width="96" alt="Prady Logo" />
+<img src="prady-logo.svg" width="96" alt="Prady Logo" />
 
 # Prady Programming Language
 
@@ -14,6 +14,7 @@
 [📖 Docs](https://pradylang.vercel.app/docs) &nbsp;|&nbsp;
 [▶ Playground](https://pradylang.vercel.app/play) &nbsp;|&nbsp;
 [⬇ Download](https://pradylang.vercel.app/download) &nbsp;|&nbsp;
+[🛠️ Error Guide](https://pradylang.vercel.app/errors) &nbsp;|&nbsp;
 [📦 Releases](https://github.com/technopradyumn/prady/releases)
 
 </div>
