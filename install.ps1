@@ -1,118 +1,65 @@
-# Prady Compiler Installer for Windows
-# Usage:
-#   PowerShell:     irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex
-#   Command Prompt: powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex"
+# Installs the latest Prady CLI and language server for the current Windows user.
+# Usage: irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "  Installing Prady Toolchain (v1.0.0 GA)" -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
-# Use USERPROFILE for reliable home dir on Windows
-$PradyHome = Join-Path $env:USERPROFILE ".prady"
-$PradyBin  = Join-Path $PradyHome "bin"
+$Repository = "technopradyumn/prady"
+$Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repository/releases/latest" -Headers @{ "User-Agent" = "Prady-Installer" }
+$AssetName = "prady-$($Release.tag_name)-x86_64-pc-windows-msvc.zip"
+$Asset = $Release.assets | Where-Object { $_.name -eq $AssetName } | Select-Object -First 1
 
-# 1. Create target directory
-if (-not (Test-Path $PradyBin)) {
-    New-Item -ItemType Directory -Path $PradyBin -Force | Out-Null
+if (-not $Asset) {
+    throw "The latest Prady release ($($Release.tag_name)) does not contain the Windows x64 package '$AssetName'. See https://github.com/$Repository/releases."
 }
 
-$Installed = $false
-
-# 2. Check if running in a cloned local repo with pre-built release binaries
-$LocalPrady = Join-Path $PSScriptRoot "target\release\prady.exe"
-
-if (Test-Path $LocalPrady) {
-    Write-Host "Installing from local release build..." -ForegroundColor Green
-    Copy-Item $LocalPrady -Destination $PradyBin -Force
-    $LocalLsp = Join-Path $PSScriptRoot "target\release\prady-lsp.exe"
-    if (Test-Path $LocalLsp) { Copy-Item $LocalLsp -Destination $PradyBin -Force }
-    $Installed = $true
-} else {
-    # 3. Direct automated download from official GitHub release
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $ZipPath = Join-Path $env:TEMP "prady-v1.0.0-windows-x64.zip"
-
-    # Try downloading official release asset
-    $DownloadUrls = @(
-        "https://github.com/technopradyumn/prady/releases/download/v1.0.0/prady-v1.0.0-x86_64-pc-windows-msvc.zip",
-        "https://github.com/technopradyumn/prady/releases/latest/download/prady-v1.0.0-x86_64-pc-windows-msvc.zip"
-    )
-
-    $DownloadSuccess = $false
-    foreach ($Url in $DownloadUrls) {
-        try {
-            Write-Host "Downloading Prady binary package..." -ForegroundColor Yellow
-            Invoke-WebRequest -Uri $Url -OutFile $ZipPath -UseBasicParsing
-            $DownloadSuccess = $true
-            break
-        } catch {
-            continue
-        }
-    }
-
-    if ($DownloadSuccess) {
-        $ExtractDir = Join-Path $env:TEMP "prady-extract"
-        if (Test-Path $ExtractDir) { Remove-Item $ExtractDir -Recurse -Force }
-        Write-Host "Extracting binaries to $PradyBin..." -ForegroundColor Green
-        Expand-Archive -Path $ZipPath -DestinationPath $ExtractDir -Force
-        Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue
-
-        # Move all .exe files from any subdirectory to $PradyBin (handles nested folder)
-        Get-ChildItem -Path $ExtractDir -Filter "*.exe" -Recurse | ForEach-Object {
-            Copy-Item -Path $_.FullName -Destination $PradyBin -Force
-        }
-        Remove-Item $ExtractDir -Recurse -Force -ErrorAction SilentlyContinue
-        $Installed = $true
-    } else {
-        Write-Host "" -ForegroundColor Red
-        Write-Host "ERROR: Could not download Prady binaries." -ForegroundColor Red
-        Write-Host "Expected: https://github.com/technopradyumn/prady/releases/download/v1.0.0/prady-v1.0.0-x86_64-pc-windows-msvc.zip" -ForegroundColor Yellow
-        Write-Host "Fallback: Build from source using 'cargo build --release'." -ForegroundColor Yellow
-        exit 1
-    }
+if (-not [Environment]::Is64BitOperatingSystem) {
+    throw "Prady's Windows release requires 64-bit Windows."
 }
 
-# 4. Permanently register in User PATH Environment Variable
-$UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
-$PathEntries = $UserPath -split ';' | Where-Object { $_ -ne "" }
+$InstallDirectory = Join-Path $env:USERPROFILE ".prady\bin"
+$TemporaryDirectory = Join-Path ([IO.Path]::GetTempPath()) ("prady-install-" + [guid]::NewGuid().ToString("N"))
+$ArchivePath = Join-Path $TemporaryDirectory $AssetName
+$ExtractDirectory = Join-Path $TemporaryDirectory "extracted"
 
-if ($PathEntries -notcontains $PradyBin) {
-    Write-Host "Registering $PradyBin in User PATH environment variable..." -ForegroundColor Green
-    $NewPath = ($PathEntries + $PradyBin) -join ';'
-    [Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
-} else {
-    Write-Host "$PradyBin is already registered in PATH." -ForegroundColor Gray
-}
-
-# Update current session environment so prady is immediately available
-$env:PATH = "$PradyBin;$env:PATH"
-
-# Broadcast WM_SETTINGCHANGE so all Windows processes recognize the new PATH
 try {
-    if (-not ("Win32.NativeMethods" -as [type])) {
-        Add-Type -Namespace Win32 -Name NativeMethods -MemberDefinition @"
-[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);
-"@
-    }
-    $HWND_BROADCAST = [IntPtr]0xffff
-    $WM_SETTINGCHANGE = 0x001a
-    $res = [UIntPtr]::Zero
-    [Win32.NativeMethods]::SendMessageTimeout($HWND_BROADCAST, $WM_SETTINGCHANGE, [UIntPtr]::Zero, "Environment", 2, 5000, [ref]$res) | Out-Null
-} catch {
-    # Non-fatal if broadcast fails
-}
+    New-Item -ItemType Directory -Path $TemporaryDirectory, $InstallDirectory -Force | Out-Null
+    Write-Host "Downloading Prady $($Release.tag_name)..." -ForegroundColor Cyan
+    Invoke-WebRequest -Uri $Asset.browser_download_url -OutFile $ArchivePath
+    Expand-Archive -LiteralPath $ArchivePath -DestinationPath $ExtractDirectory
 
-Write-Host ""
-Write-Host "==========================================" -ForegroundColor Green
-Write-Host "  Prady is installed system-wide!" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Green
-Write-Host "Prady CLI: $(Join-Path $PradyBin 'prady.exe')"
-Write-Host "Prady LSP: $(Join-Path $PradyBin 'prady-lsp.exe')"
-Write-Host ""
-Write-Host "You can now use 'prady' anywhere across your system:" -ForegroundColor Cyan
-Write-Host "    prady version" -ForegroundColor White
-Write-Host "    prady run main.pr" -ForegroundColor White
-Write-Host "    prady new my-project" -ForegroundColor White
+    $Cli = Get-ChildItem -LiteralPath $ExtractDirectory -Filter "prady.exe" -File -Recurse | Select-Object -First 1
+    $Lsp = Get-ChildItem -LiteralPath $ExtractDirectory -Filter "prady-lsp.exe" -File -Recurse | Select-Object -First 1
+    if (-not $Cli -or -not $Lsp) {
+        throw "The downloaded package is missing prady.exe or prady-lsp.exe. Please report this at https://github.com/$Repository/issues."
+    }
+
+    Copy-Item -LiteralPath $Cli.FullName -Destination (Join-Path $InstallDirectory "prady.exe") -Force
+    Copy-Item -LiteralPath $Lsp.FullName -Destination (Join-Path $InstallDirectory "prady-lsp.exe") -Force
+
+    $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    $PathEntries = @($UserPath -split ";" | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_) -and $_.TrimEnd("\") -ine $InstallDirectory.TrimEnd("\")
+    })
+    $PathEntries += $InstallDirectory
+    [Environment]::SetEnvironmentVariable("Path", ($PathEntries -join ";"), "User")
+
+    if (($env:Path -split ";" | Where-Object { $_.TrimEnd("\") -ieq $InstallDirectory.TrimEnd("\") }).Count -eq 0) {
+        $env:Path = "$InstallDirectory;$env:Path"
+    }
+
+    & (Join-Path $InstallDirectory "prady.exe") version
+    if ($LASTEXITCODE -ne 0) {
+        throw "Prady was installed, but its version check failed. See https://github.com/$Repository/issues."
+    }
+
+    Write-Host ""
+    Write-Host "Prady CLI and VS Code language server installed to $InstallDirectory" -ForegroundColor Green
+    Write-Host "Open a new terminal (and restart VS Code), then try: prady run path\to\hello.pr"
+}
+finally {
+    if (Test-Path -LiteralPath $TemporaryDirectory) {
+        Remove-Item -LiteralPath $TemporaryDirectory -Recurse -Force
+    }
+}

@@ -49,8 +49,17 @@ irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | ie
 
 **Windows** (Command Prompt / CMD):
 ```cmd
-powershell -c "irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex"
 ```
+
+The installer downloads the latest Windows x64 release, installs both `prady` and `prady-lsp` to `%USERPROFILE%\.prady\bin`, and adds that folder to your **user** `PATH` (no administrator rights or Rust installation needed). Open a new terminal after installation, then verify and run a program:
+
+```powershell
+prady version
+prady run .\hello.pr
+```
+
+In Command Prompt, use `prady run hello.pr`. If you installed from a release archive manually, extract it and run `prady.exe` from that folder, or add the folder containing it to your user `PATH`.
 
 > Full installation guide: **[pradylang.vercel.app/docs/getting-started/installation](https://pradylang.vercel.app/docs/getting-started/installation)**
 
@@ -78,10 +87,12 @@ cd prady
 # 2. Build optimized release binaries
 cargo build --release
 
-# 3. Install globally via Cargo
+# 3. Install globally via Cargo (cargo build alone does not add prady to PATH)
 cargo install --path compiler/prady-cli
 cargo install --path compiler/prady-lsp
 ```
+
+After `cargo build --release`, you can also run the compiler directly from the repository with `.\target\release\prady.exe run .\examples\hello.pr` in PowerShell. `cargo install` or the one-line installer is what makes `prady` available as a command from any folder.
 
 ---
 

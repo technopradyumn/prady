@@ -101,7 +101,7 @@ jobs:
           $name = "${{ env.BINARY_NAME }}-${{ steps.version.outputs.tag }}-${{ matrix.target }}"
           New-Item -ItemType Directory -Path $name
           Copy-Item "target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}${{ matrix.binary_ext }}" "$name/"
-          Copy-Item "target/${{ matrix.target }}/release/prady-lsp${{ matrix.binary_ext }}" "$name/" -ErrorAction SilentlyContinue
+          Copy-Item "target/${{ matrix.target }}/release/prady-lsp${{ matrix.binary_ext }}" "$name/"
           Copy-Item "README.md", "LICENSE" "$name/" -ErrorAction SilentlyContinue
           Compress-Archive -Path "$name/*" -DestinationPath "$name.zip"
           echo "ASSET=$name.zip" >> $env:GITHUB_ENV
@@ -113,7 +113,7 @@ jobs:
           name="${{ env.BINARY_NAME }}-${{ steps.version.outputs.tag }}-${{ matrix.target }}"
           mkdir "$name"
           cp "target/${{ matrix.target }}/release/${{ env.BINARY_NAME }}" "$name/"
-          cp "target/${{ matrix.target }}/release/prady-lsp" "$name/" 2>/dev/null || true
+          cp "target/${{ matrix.target }}/release/prady-lsp" "$name/"
           cp README.md LICENSE "$name/" 2>/dev/null || true
           tar czf "$name.tar.gz" "$name"
           echo "ASSET=$name.tar.gz" >> "$GITHUB_ENV"
@@ -135,7 +135,7 @@ jobs:
             ${{ env.ASSET }}.sha256
           generate_release_notes: true
 
-  # ─── 3. Generate install scripts and upload ───────────────────────────────
+  # ─── 3. Upload the documented one-line installers ─────────────────────────
   install-scripts:
     name: Upload install scripts
     needs: build
@@ -143,60 +143,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Determine version tag
-        id: version
-        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-
-      - name: Create install.sh (macOS / Linux)
-        run: |
-          cat > install.sh << 'SCRIPT'
-          #!/usr/bin/env sh
-          set -e
-          VERSION="${{ steps.version.outputs.tag }}"
-          BASE="https://github.com/technopradyumn/prady/releases/download/${VERSION}"
-          OS=$(uname -s)
-          ARCH=$(uname -m)
-          case "${OS}-${ARCH}" in
-            Linux-x86_64)   FILE="prady-${VERSION}-x86_64-unknown-linux-gnu.tar.gz" ;;
-            Linux-aarch64)  FILE="prady-${VERSION}-aarch64-unknown-linux-gnu.tar.gz" ;;
-            Darwin-x86_64)  FILE="prady-${VERSION}-x86_64-apple-darwin.tar.gz" ;;
-            Darwin-arm64)   FILE="prady-${VERSION}-aarch64-apple-darwin.tar.gz" ;;
-            *) echo "Unsupported platform: ${OS}-${ARCH}" && exit 1 ;;
-          esac
-          echo "Downloading ${FILE}..."
-          curl -fsSL "${BASE}/${FILE}" | tar xz
-          DIR="${FILE%.tar.gz}"
-          sudo mv "${DIR}/prady" /usr/local/bin/prady
-          rm -rf "${DIR}"
-          echo "Installed: $(prady version)"
-          SCRIPT
-          chmod +x install.sh
-
-      - name: Create install.ps1 (Windows)
-        run: |
-          cat > install.ps1 << 'SCRIPT'
-          $ErrorActionPreference = "Stop"
-          $VERSION = "${{ steps.version.outputs.tag }}"
-          $BASE = "https://github.com/technopradyumn/prady/releases/download/$VERSION"
-          $FILE = "prady-$VERSION-x86_64-pc-windows-msvc.zip"
-          $URL  = "$BASE/$FILE"
-          $DEST = "$env:TEMP\$FILE"
-          Write-Host "Downloading $FILE..."
-          Invoke-WebRequest -Uri $URL -OutFile $DEST
-          $DIR = "$env:TEMP\prady-install"
-          Expand-Archive -Path $DEST -DestinationPath $DIR -Force
-          $INSTALL = "$env:ProgramFiles\Prady"
-          New-Item -ItemType Directory -Force -Path $INSTALL | Out-Null
-          Copy-Item "$DIR\*\prady.exe" "$INSTALL\prady.exe"
-          $PATH = [Environment]::GetEnvironmentVariable("PATH","Machine")
-          if ($PATH -notlike "*$INSTALL*") {
-              [Environment]::SetEnvironmentVariable("PATH","$PATH;$INSTALL","Machine")
-              Write-Host "Added $INSTALL to PATH. Restart your terminal."
-          }
-          & "$INSTALL\prady.exe" version
-          SCRIPT
-
-      - name: Upload install scripts
+      - name: Upload repository installers
         uses: softprops/action-gh-release@v2
         with:
           files: |

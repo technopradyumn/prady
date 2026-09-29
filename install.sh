@@ -1,64 +1,75 @@
-#!/usr/bin/env bash
-# Prady Compiler Installer for Linux & macOS
+#!/usr/bin/env sh
+# Install the latest Prady CLI and language server for the current user.
 # Usage: curl -fsSL https://raw.githubusercontent.com/technopradyumn/prady/main/install.sh | sh
 
-set -e
+set -eu
 
-PRADY_HOME="$HOME/.prady"
+PRADY_HOME="${HOME:?HOME must be set}/.prady"
 PRADY_BIN="$PRADY_HOME/bin"
+TMP_DIR=""
 
-echo "=========================================="
-echo "  Installing Prady Toolchain (v1.0.0 GA)"
-echo "=========================================="
+cleanup() {
+    if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ]; then
+        rm -rf "$TMP_DIR"
+    fi
+}
+trap cleanup EXIT
 
 mkdir -p "$PRADY_BIN"
 
-# Check if local release build exists
-if [ -f "./target/release/prady" ] && [ -f "./target/release/prady-lsp" ]; then
-    echo "Installing from local release build..."
-    cp ./target/release/prady "$PRADY_BIN/"
-    cp ./target/release/prady-lsp "$PRADY_BIN/"
-    chmod +x "$PRADY_BIN/prady" "$PRADY_BIN/prady-lsp"
+# When run from a built source checkout, use its binaries instead of downloading.
+if [ -f "compiler/prady-cli/Cargo.toml" ] &&
+   [ -f "target/release/prady" ] &&
+   [ -f "target/release/prady-lsp" ]; then
+    echo "Installing Prady from the local release build..."
+    cp "target/release/prady" "$PRADY_BIN/prady"
+    cp "target/release/prady-lsp" "$PRADY_BIN/prady-lsp"
 else
-    OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+    OS="$(uname -s)"
     ARCH="$(uname -m)"
-    
-    TARGET=""
-    if [ "$OS" = "linux" ]; then
-        if [ "$ARCH" = "x86_64" ]; then
-            TARGET="x86_64-unknown-linux-gnu"
-        elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-            TARGET="aarch64-unknown-linux-gnu"
-        fi
-    elif [ "$OS" = "darwin" ]; then
-        if [ "$ARCH" = "arm64" ]; then
-            TARGET="aarch64-apple-darwin"
-        else
-            TARGET="x86_64-apple-darwin"
-        fi
-    fi
+    case "${OS}-${ARCH}" in
+        Linux-x86_64)   TARGET="x86_64-unknown-linux-gnu" ;;
+        Linux-aarch64|Linux-arm64) TARGET="aarch64-unknown-linux-gnu" ;;
+        Darwin-x86_64)  TARGET="x86_64-apple-darwin" ;;
+        Darwin-arm64|Darwin-aarch64) TARGET="aarch64-apple-darwin" ;;
+        *)
+            echo "Unsupported OS/architecture: ${OS} ${ARCH}" >&2
+            exit 1
+            ;;
+    esac
 
-    if [ -z "$TARGET" ]; then
-        echo "Unsupported OS/architecture: $OS $ARCH"
+    VERSION="$(curl -fsSL --retry 3 \
+        -H "Accept: application/vnd.github+json" \
+        -H "User-Agent: Prady-Installer" \
+        "https://api.github.com/repos/technopradyumn/prady/releases/latest" |
+        sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
+    if [ -z "$VERSION" ]; then
+        echo "Could not determine the latest Prady release from GitHub." >&2
         exit 1
     fi
 
-    URL="https://github.com/technopradyumn/prady/releases/download/v1.0.0/prady-v1.0.0-${TARGET}.tar.gz"
-    echo "Downloading Prady package from GitHub..."
-    curl -fsSL "$URL" | tar -xz -C "$PRADY_BIN"
-    
-    # Flatten if directory was packaged inside (handles prady-VERSION-TARGET/ subfolder)
-    find "$PRADY_BIN" -name "prady" -not -path "$PRADY_BIN/prady" -type f -exec mv {} "$PRADY_BIN/" \; 2>/dev/null || true
-    find "$PRADY_BIN" -name "prady-lsp" -not -path "$PRADY_BIN/prady-lsp" -type f -exec mv {} "$PRADY_BIN/" \; 2>/dev/null || true
-    # Remove any leftover subdirectories
-    find "$PRADY_BIN" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \; 2>/dev/null || true
-    chmod +x "$PRADY_BIN/prady"
-    chmod +x "$PRADY_BIN/prady-lsp" 2>/dev/null || true
+    ARCHIVE="prady-${VERSION}-${TARGET}.tar.gz"
+    TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/prady-install.XXXXXX")"
+    echo "Downloading Prady ${VERSION} for ${TARGET}..."
+    curl -fsSL --retry 3 \
+        "https://github.com/technopradyumn/prady/releases/download/${VERSION}/${ARCHIVE}" \
+        -o "$TMP_DIR/$ARCHIVE"
+    tar -xzf "$TMP_DIR/$ARCHIVE" -C "$TMP_DIR"
+
+    CLI="$(find "$TMP_DIR" -type f -name prady -print -quit)"
+    LSP="$(find "$TMP_DIR" -type f -name prady-lsp -print -quit)"
+    if [ -z "$CLI" ] || [ -z "$LSP" ]; then
+        echo "The Prady release archive is missing prady or prady-lsp." >&2
+        exit 1
+    fi
+    cp "$CLI" "$PRADY_BIN/prady"
+    cp "$LSP" "$PRADY_BIN/prady-lsp"
 fi
 
-# Configure PATH in shell config
+chmod +x "$PRADY_BIN/prady" "$PRADY_BIN/prady-lsp"
+
 SHELL_CONFIG=""
-if [ -n "$ZSH_VERSION" ] || [ -f "$HOME/.zshrc" ]; then
+if [ -n "${ZSH_VERSION:-}" ] || [ -f "$HOME/.zshrc" ]; then
     SHELL_CONFIG="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then
     SHELL_CONFIG="$HOME/.bashrc"
@@ -66,27 +77,13 @@ else
     SHELL_CONFIG="$HOME/.profile"
 fi
 
-if ! grep -q "$PRADY_BIN" "$SHELL_CONFIG" 2>/dev/null; then
-    echo "Adding $PRADY_BIN to $SHELL_CONFIG..."
-    echo "" >> "$SHELL_CONFIG"
-    echo "# Prady programming language" >> "$SHELL_CONFIG"
-    echo "export PATH=\"$PRADY_BIN:\$PATH\"" >> "$SHELL_CONFIG"
+if ! grep -Fq "$PRADY_BIN" "$SHELL_CONFIG" 2>/dev/null; then
+    printf '\n# Prady programming language\nexport PATH="%s:$PATH"\n' "$PRADY_BIN" >> "$SHELL_CONFIG"
 fi
 
-# Try symlinking to /usr/local/bin so it works system-wide immediately without restarting shell
-if [ -w "/usr/local/bin" ]; then
-    ln -sf "$PRADY_BIN/prady" /usr/local/bin/prady
-    ln -sf "$PRADY_BIN/prady-lsp" /usr/local/bin/prady-lsp
-fi
-
+export PATH="$PRADY_BIN:$PATH"
+"$PRADY_BIN/prady" version
 echo ""
-echo "=========================================="
-echo "  Prady is installed system-wide!"
-echo "=========================================="
-echo "Prady CLI: $PRADY_BIN/prady"
-echo "Prady LSP: $PRADY_BIN/prady-lsp"
-echo ""
-echo "Run 'source $SHELL_CONFIG' or open a new terminal window."
-echo "Verify with:"
-echo "    prady version"
-echo "    prady run main.pr"
+echo "Prady CLI and language server installed to $PRADY_BIN"
+echo "Open a new terminal or run: . \"$SHELL_CONFIG\""
+echo "Then try: prady run path/to/hello.pr"
