@@ -126,6 +126,19 @@ fn main() {
 }
 ```
 
+### Reading Program Input
+
+`input()` reads one line from the terminal. An optional prompt is printed before it waits:
+
+```prady
+fn main() {
+    let name = input("Name: ");
+    print("Hello " + name);
+}
+```
+
+Run it with `prady run path/to/main.pr`, then type a line and press Enter. The VS Code **Prady: Run File** command uses an interactive terminal too.
+
 ### Architecture as Code
 
 ```prady

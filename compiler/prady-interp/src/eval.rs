@@ -1,5 +1,6 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
+use std::io::{self, Write};
 use std::rc::Rc;
 
 use prady_ast::*;
@@ -43,6 +44,7 @@ pub struct Interpreter {
     pub classes: HashMap<String, ClassDecl>,
     pub enums: HashMap<String, EnumDecl>,
     pub output_buffer: Option<Rc<RefCell<Vec<String>>>>,
+    pub input_buffer: Option<Rc<RefCell<VecDeque<String>>>>,
 }
 
 impl Interpreter {
@@ -77,11 +79,17 @@ impl Interpreter {
             classes,
             enums,
             output_buffer: None,
+            input_buffer: None,
         }
     }
 
     pub fn with_output_buffer(mut self, buffer: Rc<RefCell<Vec<String>>>) -> Self {
         self.output_buffer = Some(buffer);
+        self
+    }
+
+    pub fn with_input_buffer(mut self, buffer: Rc<RefCell<VecDeque<String>>>) -> Self {
+        self.input_buffer = Some(buffer);
         self
     }
 
@@ -91,6 +99,53 @@ impl Interpreter {
         } else {
             println!("{}", text);
         }
+    }
+
+    fn read_input(&mut self, prompt: &str, span: Span) -> Result<String, RuntimeError> {
+        if let Some(ref buffer) = self.input_buffer {
+            if !prompt.is_empty() {
+                if let Some(ref output) = self.output_buffer {
+                    output.borrow_mut().push(prompt.to_string());
+                } else {
+                    print!("{}", prompt);
+                    io::stdout().flush().map_err(|error| {
+                        RuntimeError::new(
+                            format!("Failed to flush input prompt: {}", error),
+                            Some(span),
+                        )
+                    })?;
+                }
+            }
+            return buffer
+                .borrow_mut()
+                .pop_front()
+                .ok_or_else(|| RuntimeError::new("No program input is available.", Some(span)));
+        }
+
+        if !prompt.is_empty() {
+            print!("{}", prompt);
+            io::stdout().flush().map_err(|error| {
+                RuntimeError::new(
+                    format!("Failed to flush input prompt: {}", error),
+                    Some(span),
+                )
+            })?;
+        }
+
+        let mut line = String::new();
+        let bytes_read = io::stdin().read_line(&mut line).map_err(|error| {
+            RuntimeError::new(
+                format!("Failed to read program input: {}", error),
+                Some(span),
+            )
+        })?;
+        if bytes_read == 0 {
+            return Err(RuntimeError::new(
+                "End of input while reading input().",
+                Some(span),
+            ));
+        }
+        Ok(line.trim_end_matches(&['\r', '\n'][..]).to_string())
     }
 
     fn is_variant_name(&self, name: &str) -> bool {
@@ -527,6 +582,24 @@ impl Interpreter {
 
                 if let Expr::Ident(ref id) = **callee {
                     // 1. Built-in functions
+                    if id.name == "input" {
+                        if evaluated_args.len() > 1 {
+                            return Err(RuntimeError::new(
+                                "input() accepts at most one prompt argument",
+                                Some(*span),
+                            )
+                            .into());
+                        }
+                        let prompt = evaluated_args
+                            .first()
+                            .map(Value::to_display_string)
+                            .unwrap_or_default();
+                        return self
+                            .read_input(&prompt, *span)
+                            .map(Value::String)
+                            .map_err(Into::into);
+                    }
+
                     if id.name == "print" || id.name == "println" {
                         let formatted: Vec<String> = evaluated_args
                             .iter()

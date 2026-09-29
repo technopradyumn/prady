@@ -57,7 +57,12 @@ pub struct EnumInstance {
 }
 
 impl EnumInstance {
-    pub fn new(enum_name: impl Into<String>, variant_name: impl Into<String>, tag: usize, payload: Vec<String>) -> Self {
+    pub fn new(
+        enum_name: impl Into<String>,
+        variant_name: impl Into<String>,
+        tag: usize,
+        payload: Vec<String>,
+    ) -> Self {
         Self {
             enum_name: enum_name.into(),
             variant_name: variant_name.into(),

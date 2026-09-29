@@ -16,7 +16,11 @@ pub struct PerformanceSuite;
 
 impl PerformanceSuite {
     /// Run a microbenchmark with warm-up cycles and measurement cycles.
-    pub fn benchmark<F: FnMut()>(name: impl Into<String>, iterations: usize, mut workload: F) -> BenchmarkResult {
+    pub fn benchmark<F: FnMut()>(
+        name: impl Into<String>,
+        iterations: usize,
+        mut workload: F,
+    ) -> BenchmarkResult {
         // Warm-up (10% of iterations, min 5)
         let warmup = (iterations / 10).max(5);
         for _ in 0..warmup {

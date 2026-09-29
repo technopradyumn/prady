@@ -48,11 +48,15 @@ pub struct Lockfile {
 
 impl Lockfile {
     pub fn new() -> Self {
-        Self { entries: HashMap::new() }
+        Self {
+            entries: HashMap::new(),
+        }
     }
 
     pub fn serialize(&self) -> String {
-        let mut out = String::from("# Prady lockfile - automatically generated. Do not edit.\nversion = 1\n\n");
+        let mut out = String::from(
+            "# Prady lockfile - automatically generated. Do not edit.\nversion = 1\n\n",
+        );
         for (_name, entry) in &self.entries {
             out.push_str(&format!(
                 "[[package]]\nname = \"{}\"\nversion = \"{}\"\nchecksum = \"{}\"\n\n",

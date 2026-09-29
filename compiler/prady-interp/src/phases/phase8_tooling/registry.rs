@@ -35,11 +35,7 @@ impl PackageRegistryClient {
             "Fast JSON serialization and deserialization library",
             "1.0.0",
         );
-        client.register_seed_package(
-            "prady-test",
-            "Unit testing and assertion toolkit",
-            "1.0.0",
-        );
+        client.register_seed_package("prady-test", "Unit testing and assertion toolkit", "1.0.0");
 
         client
     }

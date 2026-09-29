@@ -12,7 +12,7 @@ pub struct WasmConfig {
 impl Default for WasmConfig {
     fn default() -> Self {
         Self {
-            initial_memory_pages: 16, // 1MB
+            initial_memory_pages: 16,    // 1MB
             max_memory_pages: Some(256), // 16MB
             enable_threads: false,
             enable_simd: false,
@@ -34,7 +34,8 @@ impl WasmModuleEmitter {
     }
 
     pub fn export_function(&mut self, prady_fn: &str, wasm_export_name: &str) {
-        self.exports.push((prady_fn.to_string(), wasm_export_name.to_string()));
+        self.exports
+            .push((prady_fn.to_string(), wasm_export_name.to_string()));
     }
 
     /// Generates WebAssembly Text format (.wat) for the module.

@@ -115,7 +115,11 @@ impl Lowerer {
             ast::Stmt::Return(expr, _) => {
                 let val = expr.as_ref().map(|e| self.lower_expr(e, block));
                 block.push(IrInstr::Ret {
-                    ty: if val.is_some() { IrType::I64 } else { IrType::Void },
+                    ty: if val.is_some() {
+                        IrType::I64
+                    } else {
+                        IrType::Void
+                    },
                     val,
                 });
             }

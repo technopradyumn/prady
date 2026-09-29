@@ -8,9 +8,16 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum IrType {
-    I8, I16, I32, I64,
-    U8, U16, U32, U64,
-    F32, F64,
+    I8,
+    I16,
+    I32,
+    I64,
+    U8,
+    U16,
+    U32,
+    U64,
+    F32,
+    F64,
     Bool,
     Void,
     Ptr(Box<IrType>),
@@ -28,8 +35,8 @@ pub enum IrValue {
     ConstBool(bool),
     Null,
     Undef,
-    Reg(String),       // %name
-    Global(String),    // @name
+    Reg(String),    // %name
+    Global(String), // @name
     Label(String),
 }
 
@@ -38,40 +45,141 @@ pub enum IrValue {
 #[derive(Debug, Clone)]
 pub enum IrInstr {
     // Arithmetic
-    Add  { dest: String, ty: IrType, lhs: IrValue, rhs: IrValue },
-    Sub  { dest: String, ty: IrType, lhs: IrValue, rhs: IrValue },
-    Mul  { dest: String, ty: IrType, lhs: IrValue, rhs: IrValue },
-    Div  { dest: String, ty: IrType, lhs: IrValue, rhs: IrValue },
-    Rem  { dest: String, ty: IrType, lhs: IrValue, rhs: IrValue },
+    Add {
+        dest: String,
+        ty: IrType,
+        lhs: IrValue,
+        rhs: IrValue,
+    },
+    Sub {
+        dest: String,
+        ty: IrType,
+        lhs: IrValue,
+        rhs: IrValue,
+    },
+    Mul {
+        dest: String,
+        ty: IrType,
+        lhs: IrValue,
+        rhs: IrValue,
+    },
+    Div {
+        dest: String,
+        ty: IrType,
+        lhs: IrValue,
+        rhs: IrValue,
+    },
+    Rem {
+        dest: String,
+        ty: IrType,
+        lhs: IrValue,
+        rhs: IrValue,
+    },
 
     // Comparison
-    ICmp { dest: String, pred: CmpPred, ty: IrType, lhs: IrValue, rhs: IrValue },
-    FCmp { dest: String, pred: CmpPred, ty: IrType, lhs: IrValue, rhs: IrValue },
+    ICmp {
+        dest: String,
+        pred: CmpPred,
+        ty: IrType,
+        lhs: IrValue,
+        rhs: IrValue,
+    },
+    FCmp {
+        dest: String,
+        pred: CmpPred,
+        ty: IrType,
+        lhs: IrValue,
+        rhs: IrValue,
+    },
 
     // Memory
-    Alloca { dest: String, ty: IrType },
-    Load   { dest: String, ty: IrType, ptr: IrValue },
-    Store  { ty: IrType, val: IrValue, ptr: IrValue },
-    GEP    { dest: String, ty: IrType, ptr: IrValue, indices: Vec<IrValue> },
+    Alloca {
+        dest: String,
+        ty: IrType,
+    },
+    Load {
+        dest: String,
+        ty: IrType,
+        ptr: IrValue,
+    },
+    Store {
+        ty: IrType,
+        val: IrValue,
+        ptr: IrValue,
+    },
+    GEP {
+        dest: String,
+        ty: IrType,
+        ptr: IrValue,
+        indices: Vec<IrValue>,
+    },
 
     // Control flow
-    Br    { cond: IrValue, then_label: String, else_label: String },
-    Jump  { label: String },
-    Ret   { ty: IrType, val: Option<IrValue> },
+    Br {
+        cond: IrValue,
+        then_label: String,
+        else_label: String,
+    },
+    Jump {
+        label: String,
+    },
+    Ret {
+        ty: IrType,
+        val: Option<IrValue>,
+    },
 
     // Function calls
-    Call  { dest: Option<String>, func: String, args: Vec<(IrType, IrValue)>, ret_ty: IrType },
+    Call {
+        dest: Option<String>,
+        func: String,
+        args: Vec<(IrType, IrValue)>,
+        ret_ty: IrType,
+    },
 
     // Type conversions
-    Trunc  { dest: String, from: IrType, val: IrValue, to: IrType },
-    ZExt   { dest: String, from: IrType, val: IrValue, to: IrType },
-    SExt   { dest: String, from: IrType, val: IrValue, to: IrType },
-    Bitcast{ dest: String, from: IrType, val: IrValue, to: IrType },
-    FPToSI { dest: String, from: IrType, val: IrValue, to: IrType },
-    SIToFP { dest: String, from: IrType, val: IrValue, to: IrType },
+    Trunc {
+        dest: String,
+        from: IrType,
+        val: IrValue,
+        to: IrType,
+    },
+    ZExt {
+        dest: String,
+        from: IrType,
+        val: IrValue,
+        to: IrType,
+    },
+    SExt {
+        dest: String,
+        from: IrType,
+        val: IrValue,
+        to: IrType,
+    },
+    Bitcast {
+        dest: String,
+        from: IrType,
+        val: IrValue,
+        to: IrType,
+    },
+    FPToSI {
+        dest: String,
+        from: IrType,
+        val: IrValue,
+        to: IrType,
+    },
+    SIToFP {
+        dest: String,
+        from: IrType,
+        val: IrValue,
+        to: IrType,
+    },
 
     // Phi node (for SSA form)
-    Phi    { dest: String, ty: IrType, incoming: Vec<(IrValue, String)> },
+    Phi {
+        dest: String,
+        ty: IrType,
+        incoming: Vec<(IrValue, String)>,
+    },
 
     // Unreachable / No-op
     Unreachable,
@@ -80,9 +188,12 @@ pub enum IrInstr {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CmpPred {
-    Eq, Ne,
-    Lt, Le,
-    Gt, Ge,
+    Eq,
+    Ne,
+    Lt,
+    Le,
+    Gt,
+    Ge,
 }
 
 // ─── IR Basic Block ───────────────────────────────────────────────────────────
@@ -95,7 +206,10 @@ pub struct IrBasicBlock {
 
 impl IrBasicBlock {
     pub fn new(label: impl Into<String>) -> Self {
-        Self { label: label.into(), instrs: vec![] }
+        Self {
+            label: label.into(),
+            instrs: vec![],
+        }
     }
 
     pub fn push(&mut self, instr: IrInstr) {
@@ -105,7 +219,12 @@ impl IrBasicBlock {
     pub fn is_terminated(&self) -> bool {
         matches!(
             self.instrs.last(),
-            Some(IrInstr::Ret { .. } | IrInstr::Br { .. } | IrInstr::Jump { .. } | IrInstr::Unreachable)
+            Some(
+                IrInstr::Ret { .. }
+                    | IrInstr::Br { .. }
+                    | IrInstr::Jump { .. }
+                    | IrInstr::Unreachable
+            )
         )
     }
 }

@@ -44,7 +44,9 @@ impl SecurityPolicy {
             return Err(format!("Security Violation: Network access is disabled by security policy (attempted to reach '{host}')"));
         }
         if !self.allowed_hosts.iter().any(|h| h == "*" || h == host) {
-            return Err(format!("Security Violation: Host '{host}' is not in allowed hosts whitelist"));
+            return Err(format!(
+                "Security Violation: Host '{host}' is not in allowed hosts whitelist"
+            ));
         }
         Ok(())
     }

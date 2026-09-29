@@ -36,7 +36,9 @@ impl Linter {
                         if fn_name.chars().any(|c| c.is_uppercase()) && fn_name != "main" {
                             diagnostics.push(LintDiagnostic {
                                 rule: "naming/snake-case",
-                                message: format!("Function '{fn_name}' should follow snake_case convention"),
+                                message: format!(
+                                    "Function '{fn_name}' should follow snake_case convention"
+                                ),
                                 line: line_num,
                                 column: 4,
                                 severity: LintSeverity::Warning,

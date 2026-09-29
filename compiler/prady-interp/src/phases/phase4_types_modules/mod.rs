@@ -2,10 +2,10 @@
 // Module exports
 
 pub mod enums;
-pub mod patterns;
 pub mod generics;
-pub mod option_result;
 pub mod modules;
+pub mod option_result;
+pub mod patterns;
 
 pub use enums::{AdtPayload, EnumInstance, EnumTypeDef, EnumVariantDef};
 pub use generics::{ConcreteType, GenericSignature, GenericSolver};

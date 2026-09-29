@@ -61,11 +61,17 @@ impl ArchitecturePolicyEngine {
     }
 
     pub fn map_file_to_layer(&mut self, file_path: impl Into<String>, layer: impl Into<String>) {
-        self.file_layer_mapping.insert(file_path.into(), layer.into());
+        self.file_layer_mapping
+            .insert(file_path.into(), layer.into());
     }
 
     /// Validate an import between two files according to the architecture policy.
-    pub fn check_import(&self, importer_file: &str, imported_file: &str, line: usize) -> Result<(), ArchViolation> {
+    pub fn check_import(
+        &self,
+        importer_file: &str,
+        imported_file: &str,
+        line: usize,
+    ) -> Result<(), ArchViolation> {
         let from_layer = self.file_layer_mapping.get(importer_file);
         let to_layer = self.file_layer_mapping.get(imported_file);
 
@@ -85,7 +91,9 @@ impl ArchitecturePolicyEngine {
                     });
                 }
 
-                if !policy.allowed_dependencies.is_empty() && !policy.allowed_dependencies.contains(to) {
+                if !policy.allowed_dependencies.is_empty()
+                    && !policy.allowed_dependencies.contains(to)
+                {
                     return Err(ArchViolation {
                         from_layer: from.clone(),
                         to_layer: to.clone(),

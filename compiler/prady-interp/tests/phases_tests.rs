@@ -5,7 +5,11 @@ fn test_phase3_codegen_and_llvm_ir() {
     let mut module = IrModule::new("test_prog");
     module.target_triple = "x86_64-pc-windows-msvc".to_string();
 
-    let mut func = IrFunction::new("add", vec![("a".into(), IrType::I64), ("b".into(), IrType::I64)], IrType::I64);
+    let mut func = IrFunction::new(
+        "add",
+        vec![("a".into(), IrType::I64), ("b".into(), IrType::I64)],
+        IrType::I64,
+    );
     let mut bb = IrBasicBlock::new("entry");
     bb.push(IrInstr::Add {
         dest: "%res".into(),
@@ -46,8 +50,24 @@ fn test_phase4_patterns_and_exhaustiveness() {
     assert_eq!(matched.unwrap().get("x").unwrap(), "42");
 
     let arms = vec![
-        MatchArm { pattern: Pattern::Variant { enum_name: None, variant_name: "Some".into(), sub_patterns: vec![] }, guard: None, action_id: 1 },
-        MatchArm { pattern: Pattern::Variant { enum_name: None, variant_name: "None".into(), sub_patterns: vec![] }, guard: None, action_id: 2 },
+        MatchArm {
+            pattern: Pattern::Variant {
+                enum_name: None,
+                variant_name: "Some".into(),
+                sub_patterns: vec![],
+            },
+            guard: None,
+            action_id: 1,
+        },
+        MatchArm {
+            pattern: Pattern::Variant {
+                enum_name: None,
+                variant_name: "None".into(),
+                sub_patterns: vec![],
+            },
+            guard: None,
+            action_id: 2,
+        },
     ];
     let variants = vec!["Some".into(), "None".into()];
     assert!(PatternEngine::check_exhaustiveness(&arms, &variants).is_ok());

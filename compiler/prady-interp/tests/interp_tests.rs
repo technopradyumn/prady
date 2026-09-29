@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::rc::Rc;
 
 use prady_diagnostics::{DiagnosticBag, SourceFile};
@@ -29,6 +30,33 @@ fn run_code(src: &str) -> Result<Vec<String>, String> {
     }
 }
 
+fn run_code_with_input(src: &str, inputs: &[&str]) -> Result<Vec<String>, String> {
+    let source = SourceFile::new("test".to_string(), src.to_string());
+    let mut bag = DiagnosticBag::new();
+    let mut lexer = Lexer::new(&source);
+    let tokens = lexer.tokenize(&mut bag);
+    let mut parser = Parser::new(&tokens, &mut bag);
+    let prog = parser.parse_program();
+
+    if bag.has_errors() {
+        return Err("Parse error".to_string());
+    }
+
+    let output = Rc::new(RefCell::new(Vec::new()));
+    let input = Rc::new(RefCell::new(
+        inputs
+            .iter()
+            .map(|line| (*line).to_string())
+            .collect::<VecDeque<_>>(),
+    ));
+    let mut interp = Interpreter::new(prog)
+        .with_output_buffer(Rc::clone(&output))
+        .with_input_buffer(input);
+    interp.run_main().map_err(|error| error.message)?;
+    let result = output.borrow().clone();
+    Ok(result)
+}
+
 #[test]
 fn test_print_hello() {
     let src = r#"
@@ -38,6 +66,34 @@ fn test_print_hello() {
     "#;
     let out = run_code(src).expect("Execution failed");
     assert_eq!(out, vec!["Hello"]);
+}
+
+#[test]
+fn test_input_reads_lines_and_writes_optional_prompt() {
+    let source = r#"
+        fn main() {
+            let name = input("Name: ");
+            let city = input();
+            print("Hello " + name + " from " + city);
+        }
+    "#;
+
+    let output = run_code_with_input(source, &["Ada", "London"]).expect("Execution failed");
+    assert_eq!(output, vec!["Name: ", "Hello Ada from London"]);
+}
+
+#[test]
+fn test_input_reports_when_no_line_is_available() {
+    let source = r#"
+        fn main() {
+            input();
+        }
+    "#;
+
+    assert_eq!(
+        run_code_with_input(source, &[]).unwrap_err(),
+        "No program input is available."
+    );
 }
 
 #[test]

@@ -18,8 +18,7 @@ impl ReleaseManager {
         if parts.len() < 3 {
             return false;
         }
-        parts[0].chars().all(|c| c.is_ascii_digit())
-            && parts[1].chars().all(|c| c.is_ascii_digit())
+        parts[0].chars().all(|c| c.is_ascii_digit()) && parts[1].chars().all(|c| c.is_ascii_digit())
     }
 
     /// Generates release notes header and checklist.

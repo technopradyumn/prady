@@ -43,7 +43,12 @@ impl Optimizer {
         for block in &mut func.blocks {
             for instr in &mut block.instrs {
                 match instr {
-                    IrInstr::Add { ty: IrType::I64, lhs: IrValue::Const(a), rhs: IrValue::Const(b), .. } => {
+                    IrInstr::Add {
+                        ty: IrType::I64,
+                        lhs: IrValue::Const(a),
+                        rhs: IrValue::Const(b),
+                        ..
+                    } => {
                         let sum = a.wrapping_add(*b);
                         *instr = IrInstr::Add {
                             dest: match instr {
@@ -55,7 +60,12 @@ impl Optimizer {
                             rhs: IrValue::Const(0),
                         };
                     }
-                    IrInstr::Mul { ty: IrType::I64, lhs: IrValue::Const(a), rhs: IrValue::Const(b), .. } => {
+                    IrInstr::Mul {
+                        ty: IrType::I64,
+                        lhs: IrValue::Const(a),
+                        rhs: IrValue::Const(b),
+                        ..
+                    } => {
                         let prod = a.wrapping_mul(*b);
                         *instr = IrInstr::Add {
                             dest: match instr {
@@ -78,7 +88,10 @@ impl Optimizer {
         for block in &mut func.blocks {
             let mut cut_index = None;
             for (idx, instr) in block.instrs.iter().enumerate() {
-                if matches!(instr, IrInstr::Ret { .. } | IrInstr::Jump { .. } | IrInstr::Unreachable) {
+                if matches!(
+                    instr,
+                    IrInstr::Ret { .. } | IrInstr::Jump { .. } | IrInstr::Unreachable
+                ) {
                     cut_index = Some(idx + 1);
                     break;
                 }
@@ -91,6 +104,7 @@ impl Optimizer {
 
     /// Remove empty or redundant blocks.
     fn clean_empty_blocks(&self, func: &mut IrFunction) {
-        func.blocks.retain(|b| !b.instrs.is_empty() || b.label == "entry");
+        func.blocks
+            .retain(|b| !b.instrs.is_empty() || b.label == "entry");
     }
 }

@@ -1,9 +1,9 @@
 // Phase 7 — Async Runtime, Networking, HTTP, JSON, and Server Templates
 // Module root
 
-pub mod runtime;
 pub mod http;
 pub mod json;
+pub mod runtime;
 pub mod server_template;
 
 pub use http::{HttpMethod, HttpRequest, HttpResponse, HttpRouter, RouteHandler};

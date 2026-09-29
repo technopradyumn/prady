@@ -7,12 +7,12 @@
 
 pub mod codegen;
 pub mod ir;
-pub mod lower;
 pub mod link;
-pub mod target;
+pub mod lower;
 pub mod optimize;
+pub mod target;
 
 pub use codegen::CodeGenerator;
-pub use ir::{PradyIr, IrModule, IrFunction, IrBasicBlock, IrInstr, IrType, IrValue};
+pub use ir::{IrBasicBlock, IrFunction, IrInstr, IrModule, IrType, IrValue, PradyIr};
 pub use lower::Lowerer;
 pub use target::TargetTriple;

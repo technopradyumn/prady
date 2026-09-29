@@ -59,7 +59,11 @@ impl ClassHierarchy {
     }
 
     /// Resolve a method via inheritance chain (virtual dispatch).
-    pub fn resolve_method(&self, class_name: &str, method_name: &str) -> Option<(&ClassDef, &MethodDef)> {
+    pub fn resolve_method(
+        &self,
+        class_name: &str,
+        method_name: &str,
+    ) -> Option<(&ClassDef, &MethodDef)> {
         let mut curr = Some(class_name);
         while let Some(name) = curr {
             if let Some(def) = self.classes.get(name) {
@@ -84,7 +88,10 @@ impl ClassHierarchy {
             if parent == base {
                 return true;
             }
-            curr = self.classes.get(parent).and_then(|c| c.super_class.as_deref());
+            curr = self
+                .classes
+                .get(parent)
+                .and_then(|c| c.super_class.as_deref());
         }
         false
     }

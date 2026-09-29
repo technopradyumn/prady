@@ -21,7 +21,9 @@ impl<T> CheckedVector<T> {
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
-        Self { data: Vec::with_capacity(capacity) }
+        Self {
+            data: Vec::with_capacity(capacity),
+        }
     }
 
     pub fn push(&mut self, item: T) {
@@ -57,7 +59,9 @@ pub struct CheckedDeque<T> {
 
 impl<T> CheckedDeque<T> {
     pub fn new() -> Self {
-        Self { data: VecDeque::new() }
+        Self {
+            data: VecDeque::new(),
+        }
     }
 
     pub fn push_back(&mut self, item: T) {

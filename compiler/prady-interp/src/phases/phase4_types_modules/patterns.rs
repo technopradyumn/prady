@@ -33,7 +33,10 @@ pub struct PatternEngine;
 
 impl PatternEngine {
     /// Match a value against a pattern. Returns bound variables if match succeeds.
-    pub fn try_match(pattern: &Pattern, instance: &EnumInstance) -> Option<HashMap<String, String>> {
+    pub fn try_match(
+        pattern: &Pattern,
+        instance: &EnumInstance,
+    ) -> Option<HashMap<String, String>> {
         let mut bindings = HashMap::new();
         if Self::match_inner(pattern, instance, &mut bindings) {
             Some(bindings)
@@ -42,14 +45,22 @@ impl PatternEngine {
         }
     }
 
-    fn match_inner(pattern: &Pattern, instance: &EnumInstance, bindings: &mut HashMap<String, String>) -> bool {
+    fn match_inner(
+        pattern: &Pattern,
+        instance: &EnumInstance,
+        bindings: &mut HashMap<String, String>,
+    ) -> bool {
         match pattern {
             Pattern::Wildcard => true,
             Pattern::Variable(var) => {
                 bindings.insert(var.clone(), instance.variant_name.clone());
                 true
             }
-            Pattern::Variant { variant_name, sub_patterns, .. } => {
+            Pattern::Variant {
+                variant_name,
+                sub_patterns,
+                ..
+            } => {
                 if variant_name != &instance.variant_name {
                     return false;
                 }
@@ -68,7 +79,9 @@ impl PatternEngine {
                 }
                 true
             }
-            Pattern::Or(pats) => pats.iter().any(|p| Self::match_inner(p, instance, bindings)),
+            Pattern::Or(pats) => pats
+                .iter()
+                .any(|p| Self::match_inner(p, instance, bindings)),
             _ => false,
         }
     }

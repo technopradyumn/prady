@@ -83,7 +83,12 @@ impl Linker {
         ))
     }
 
-    fn link_unix_gcc_or_clang(&self, default_tool: &str, object_file: &Path, out: &Path) -> Result<PathBuf, String> {
+    fn link_unix_gcc_or_clang(
+        &self,
+        default_tool: &str,
+        object_file: &Path,
+        out: &Path,
+    ) -> Result<PathBuf, String> {
         let tools = [default_tool, "gcc", "clang", "ld"];
         for tool in &tools {
             let mut cmd = Command::new(tool);

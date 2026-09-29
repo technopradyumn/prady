@@ -2,8 +2,8 @@
 // Module root
 
 pub mod classes;
-pub mod traits;
 pub mod policy_engine;
+pub mod traits;
 
 pub use classes::{ClassDef, ClassHierarchy, MethodDef};
 pub use policy_engine::{ArchViolation, ArchitecturePolicyEngine, LayerPolicy};

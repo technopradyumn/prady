@@ -51,8 +51,15 @@ impl GenericSolver {
     }
 
     /// Register a concrete instantiation of a generic function or type.
-    pub fn register_instantiation(&mut self, base_name: &str, type_args: HashMap<String, ConcreteType>) -> String {
-        let entry = self.instantiations.entry(base_name.to_string()).or_default();
+    pub fn register_instantiation(
+        &mut self,
+        base_name: &str,
+        type_args: HashMap<String, ConcreteType>,
+    ) -> String {
+        let entry = self
+            .instantiations
+            .entry(base_name.to_string())
+            .or_default();
         if !entry.contains(&type_args) {
             entry.push(type_args.clone());
         }
