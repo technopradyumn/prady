@@ -1,6 +1,7 @@
 use prady_ast::AstPrinter;
 use prady_diagnostics::style;
 use prady_diagnostics::{DiagnosticBag, SourceFile};
+use prady_interp::phases::*;
 use prady_interp::Interpreter;
 use prady_lexer::Lexer;
 use prady_parser::Parser;
@@ -23,10 +24,16 @@ fn print_help() {
     println!("  ast <file.pr>                     Print Abstract Syntax Tree of source file");
     println!("  tokens <file.pr>                  Dump token stream with line & column spans");
     println!("  run <file.pr>                     Verify and evaluate Prady file");
+    println!("  emit-llvm <file.pr>               Lower to PradyIR and emit textual LLVM IR");
+    println!("  fmt <file.pr>                     Format source file to standard styling");
+    println!("  lint <file.pr>                    Run static analysis linter and code smells check");
     println!("  new <template> <name> [--arch A]  Scaffold new project (api, cli, clean)");
     println!("  add <package>                     Add dependency package to prady.toml");
+    println!("  pkg-search <query>                Search packages in official registry");
     println!("  init                              Initialize prady.toml in current directory");
     println!("  test [path]                       Run tests in directory or file");
+    println!("  conformance                       Run language specification conformance test suite");
+    println!("  bench                             Run DSA and runtime microbenchmarks");
     println!("  doctor                            Diagnostics on compiler environment");
     println!("  version                           Print version information");
     println!("  help                              Print this help menu\n");
@@ -121,6 +128,40 @@ fn main() -> ExitCode {
             }
             run_add(&args[2])
         }
+        "emit-llvm" => {
+            if args.len() < 3 {
+                eprintln!("{}: Missing file argument for 'emit-llvm'", style::red_bold("error"));
+                eprintln!("Usage: prady emit-llvm <file.pr>");
+                return ExitCode::FAILURE;
+            }
+            run_emit_llvm(Path::new(&args[2]))
+        }
+        "fmt" => {
+            if args.len() < 3 {
+                eprintln!("{}: Missing file argument for 'fmt'", style::red_bold("error"));
+                eprintln!("Usage: prady fmt <file.pr>");
+                return ExitCode::FAILURE;
+            }
+            run_fmt(Path::new(&args[2]))
+        }
+        "lint" => {
+            if args.len() < 3 {
+                eprintln!("{}: Missing file argument for 'lint'", style::red_bold("error"));
+                eprintln!("Usage: prady lint <file.pr>");
+                return ExitCode::FAILURE;
+            }
+            run_lint(Path::new(&args[2]))
+        }
+        "pkg-search" => {
+            if args.len() < 3 {
+                eprintln!("{}: Missing search query for 'pkg-search'", style::red_bold("error"));
+                eprintln!("Usage: prady pkg-search <query>");
+                return ExitCode::FAILURE;
+            }
+            run_pkg_search(&args[2])
+        }
+        "conformance" => run_conformance(),
+        "bench" => run_bench(),
         "init" => run_init(),
         "test" => {
             let path = args.get(2).map(PathBuf::from);
@@ -577,11 +618,168 @@ fn run_add(pkg: &str) -> ExitCode {
 
 fn run_version() -> ExitCode {
     println!(
-        "{} version 1.0.0 (Phase 10: General Availability - GA)",
+        "{} version 1.0.0 (Phase 11: Production Stable Release)",
         style::bold("prady")
     );
     println!("Host: x86_64-pc-windows-msvc");
     println!("Target extension: .pr");
-    println!("Standard Library: 28 Production DSA Suites & Full Algorithmic Engine");
+    println!("Standard Library: Complete 28 DSA Suites, Architecture Engine, Async, HTTP, and Tooling");
     ExitCode::SUCCESS
 }
+
+fn run_emit_llvm(file: &Path) -> ExitCode {
+    let source = match load_source(file) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("{}: {}", style::red_bold("error"), e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let mut diagnostics = DiagnosticBag::new();
+    let mut lexer = Lexer::new(&source);
+    let tokens = lexer.tokenize(&mut diagnostics);
+
+    let mut parser = Parser::new(&tokens, &mut diagnostics);
+    let program = parser.parse_program();
+
+    if diagnostics.has_errors() {
+        diagnostics.emit(&source);
+        return ExitCode::FAILURE;
+    }
+
+    let lowerer = Lowerer::new(file.file_stem().unwrap_or_default().to_string_lossy());
+    let ir_module = lowerer.lower_program(&program);
+    let mut codegen = CodeGenerator::new(ir_module);
+    let llvm_ir = codegen.emit();
+
+    println!("{llvm_ir}");
+    ExitCode::SUCCESS
+}
+
+fn run_fmt(file: &Path) -> ExitCode {
+    let content = match fs::read_to_string(file) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("{}: Failed to read '{}': {}", style::red_bold("error"), file.display(), e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let formatter = CodeFormatter::new();
+    let formatted = formatter.format(&content);
+
+    if formatted != content {
+        if let Err(e) = fs::write(file, &formatted) {
+            eprintln!("{}: Failed to write '{}': {}", style::red_bold("error"), file.display(), e);
+            return ExitCode::FAILURE;
+        }
+        println!("{} Formatted '{}'", style::green_bold("✓"), file.display());
+    } else {
+        println!("{} '{}' is already formatted", style::green_bold("✓"), file.display());
+    }
+    ExitCode::SUCCESS
+}
+
+fn run_lint(file: &Path) -> ExitCode {
+    let content = match fs::read_to_string(file) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("{}: Failed to read '{}': {}", style::red_bold("error"), file.display(), e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let diagnostics = Linter::lint_source(&content);
+    if diagnostics.is_empty() {
+        println!("{} No lint issues found in '{}'", style::green_bold("✓"), file.display());
+        return ExitCode::SUCCESS;
+    }
+
+    println!("{} Found {} lint issue(s) in '{}':\n", style::yellow_bold("warning:"), diagnostics.len(), file.display());
+    for diag in &diagnostics {
+        let sev = match diag.severity {
+            LintSeverity::Error => style::red_bold("error"),
+            LintSeverity::Warning => style::yellow_bold("warning"),
+            LintSeverity::Info => style::blue_bold("info"),
+        };
+        println!("  {sev} [{}] {}:{}: {}", diag.rule, diag.line, diag.column, diag.message);
+        if let Some(suggestion) = &diag.fix_suggestion {
+            println!("    {} Suggestion: {}", style::green_bold("fix:"), suggestion);
+        }
+    }
+    ExitCode::SUCCESS
+}
+
+fn run_pkg_search(query: &str) -> ExitCode {
+    let client = PackageRegistryClient::new("https://registry.pradylang.org");
+    let results = client.search(query);
+    println!("{} Searching registry for '{}'...\n", style::bold("Prady Registry:"), query);
+    if results.is_empty() {
+        println!("  No packages found matching '{}'", query);
+    } else {
+        for pkg in results {
+            println!("  {} {} (latest: {})", style::green_bold("•"), style::bold(&pkg.name), pkg.latest_version);
+            println!("    {}", pkg.description);
+            println!("    Install: prady add {}\n", pkg.name);
+        }
+    }
+    ExitCode::SUCCESS
+}
+
+fn run_conformance() -> ExitCode {
+    println!("{}", style::bold("Prady Language Specification Conformance Suite\n"));
+    let tests = ConformanceSuite::get_standard_tests();
+    let mut passed = 0;
+    for test in &tests {
+        print!("  Running {} [{}]: ", test.id, test.name);
+        let source_file = SourceFile::new(format!("{}.pr", test.id), test.source.to_string());
+        let mut diagnostics = DiagnosticBag::new();
+        let mut lexer = Lexer::new(&source_file);
+        let tokens = lexer.tokenize(&mut diagnostics);
+
+        let mut parser = Parser::new(&tokens, &mut diagnostics);
+        let program = parser.parse_program();
+
+        if diagnostics.has_errors() {
+            println!("{}", style::red_bold("FAILED (syntax) ✗"));
+            continue;
+        }
+
+        let mut interp = Interpreter::new(program);
+        match interp.run_main() {
+            Ok(_) => {
+                println!("{}", style::green_bold("PASSED ✓"));
+                passed += 1;
+            }
+            Err(e) => {
+                println!("{} (runtime: {})", style::red_bold("FAILED ✗"), e.message);
+            }
+        }
+    }
+    println!("\nSummary: {}/{} conformance tests passed.", passed, tests.len());
+    if passed == tests.len() {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    }
+}
+
+fn run_bench() -> ExitCode {
+    println!("{}", style::bold("Prady Performance Benchmark Suite\n"));
+    let result = PerformanceSuite::benchmark("DSA Vector allocation & insertion", 50000, || {
+        let mut v = CheckedVector::with_capacity(100);
+        for i in 0..100 {
+            v.push(i);
+        }
+    });
+
+    println!("  Benchmark: {}", style::bold(&result.name));
+    println!("  Iterations: {}", result.iterations);
+    println!("  Total Duration: {:?}", result.total_duration);
+    println!("  Avg Per Iteration: {:?}", result.avg_per_iter);
+    println!("  Throughput: {:.2} ops/sec\n", result.ops_per_sec);
+    println!("{}", style::green_bold("✓ Benchmark completed successfully"));
+    ExitCode::SUCCESS
+}
+
