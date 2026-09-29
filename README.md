@@ -1,63 +1,97 @@
+<div align="center">
+
+<img src="icon.png" width="96" alt="Prady Logo" />
+
 # Prady Programming Language
 
-> **Native, statically typed, safe, and architecture-aware general-purpose programming language.**
+**Native · Statically Typed · Safe · Architecture-Aware**
 
-```
-CLI: prady   |   Extension: .pr   |   Compiler: Rust + LLVM
-```
+[![Version](https://img.shields.io/badge/version-1.0.0%20GA-blue?style=flat-square)](https://github.com/technopradyumn/prady/releases/tag/v1.0.0)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=flat-square)](LICENSE)
+[![Website](https://img.shields.io/badge/website-pradylang.vercel.app-indigo?style=flat-square)](https://pradylang.vercel.app)
+
+[🌐 Website](https://pradylang.vercel.app) &nbsp;|&nbsp;
+[📖 Docs](https://pradylang.vercel.app/docs) &nbsp;|&nbsp;
+[▶ Playground](https://pradylang.vercel.app/play) &nbsp;|&nbsp;
+[⬇ Download](https://pradylang.vercel.app/download) &nbsp;|&nbsp;
+[📦 Releases](https://github.com/technopradyumn/prady/releases)
+
+</div>
 
 ---
 
 ## 🌟 Vision
 
 **Prady** (`.pr`) is designed for engineers who demand:
-- **Clean, readable syntax**: Intuitive blocks, explicit expressions, and modern ergonomics.
-- **Native performance**: Compiling to native machine code via LLVM without GC overhead.
-- **Safety by default**: Immutability by default, explicit `mut`, explicit `Option<T>` / `Result<T, E>`, and no unhandled null pointers.
-- **Architecture as Code**: Native `architecture` declarations, layer dependency validation, and SOLID quality engine heuristics built directly into the toolchain.
-- **Complete DSA library**: Production-grade collection and algorithm implementations with documented time & space complexities.
-- **Server and Systems grade**: Native async/await, first-class HTTP, JSON, WebAssembly (WASI), and controlled FFI.
+
+- **Clean, readable syntax** — Intuitive blocks, explicit expressions, and modern ergonomics.
+- **Native performance** — Compiles to native machine code via LLVM without GC overhead.
+- **Safety by default** — Immutability by default, explicit `mut`, `Option<T>` / `Result<T, E>`, and no unhandled null pointers.
+- **Architecture as Code** — Native `architecture` declarations, layer dependency validation, and SOLID quality engine heuristics built into the toolchain.
+- **Complete DSA library** — 28 production-grade data structures with documented time & space complexities.
+- **Server and Systems grade** — Native async/await, first-class HTTP, JSON, WebAssembly (WASI), and controlled FFI.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Install
 
-### Installing from GitHub
+### One-Line Terminal Installation (Recommended)
 
-Clone and build the Prady compiler and language server using Rust:
+**macOS & Linux** (Bash / Zsh):
+```bash
+curl -fsSL https://raw.githubusercontent.com/technopradyumn/prady/main/install.sh | sh
+```
+
+**Windows** (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex
+```
+
+**Windows** (Command Prompt / CMD):
+```cmd
+powershell -c "irm https://raw.githubusercontent.com/technopradyumn/prady/main/install.ps1 | iex"
+```
+
+> Full installation guide: **[pradylang.vercel.app/docs/getting-started/installation](https://pradylang.vercel.app/docs/getting-started/installation)**
+
+### Download Standalone Binaries
+
+Get pre-built native binaries from the official download page:
+
+| Platform | Link |
+|---|---|
+| 🪟 Windows (x64) | [pradylang.vercel.app/download](https://pradylang.vercel.app/download) |
+| 🍎 macOS Apple Silicon | [pradylang.vercel.app/download](https://pradylang.vercel.app/download) |
+| 🍎 macOS Intel | [pradylang.vercel.app/download](https://pradylang.vercel.app/download) |
+| 🐧 Linux (x64) | [pradylang.vercel.app/download](https://pradylang.vercel.app/download) |
+| 🐧 Linux (ARM64) | [pradylang.vercel.app/download](https://pradylang.vercel.app/download) |
+
+> **Windows users:** If SmartScreen blocks the installer, click **"More info" → "Run anyway"**. The binary is safe — it's unsigned only because it's new.
+
+### Build from Source
 
 ```bash
-# 1. Clone the official repository from GitHub
+# 1. Clone the official repository
 git clone https://github.com/technopradyumn/prady.git
 cd prady
 
 # 2. Build optimized release binaries
 cargo build --release
 
-# 3. Install compiler and LSP globally to system PATH via Cargo
+# 3. Install globally via Cargo
 cargo install --path compiler/prady-cli
 cargo install --path compiler/prady-lsp
 ```
 
-The resulting binaries are located in `target/release/` or accessible globally as `prady` and `prady-lsp`.
+---
 
-### Checking & Running Prady Code
-```bash
-# Check compiler version
-prady version
+## ▶ Try It Online
 
-# Run a Prady program
-prady run examples/hello.pr
+No installation needed — run Prady code directly in your browser:
 
-# Verify syntax, AST, and report rich compiler diagnostics
-cargo run -p prady-cli -- check examples/hello.pr
+**[pradylang.vercel.app/play](https://pradylang.vercel.app/play)**
 
-# Inspect Abstract Syntax Tree (AST)
-cargo run -p prady-cli -- ast examples/hello.pr
-
-# Inspect Lexer Tokens
-cargo run -p prady-cli -- tokens examples/hello.pr
-```
+Features: Live execution · Token inspector · AST viewer · Syntax highlighting
 
 ---
 
@@ -73,7 +107,7 @@ fn main() {
     let name = "Pradyumn";
     let age: Int = 25;
     let mut counter = 0;
-    
+
     counter = counter + 1;
     print("Hello " + name);
     print("Sum: " + add(10, 20));
@@ -81,8 +115,9 @@ fn main() {
 ```
 
 ### Architecture as Code
+
 ```prady
-// Declare and enforce Clean Architecture at compile time
+// Enforce Clean Architecture at compile time
 architecture backend {
     layer presentation;
     layer application;
@@ -97,6 +132,78 @@ architecture backend {
 }
 ```
 
+> Learn more: **[pradylang.vercel.app/docs/handbook/architecture-contracts](https://pradylang.vercel.app/docs/handbook/architecture-contracts)**
+
+---
+
+## 📚 Documentation
+
+Full documentation is available at **[pradylang.vercel.app/docs](https://pradylang.vercel.app/docs)**
+
+### Getting Started
+| Page | URL |
+|---|---|
+| 🚀 Overview & Philosophy | [/docs/getting-started/overview](https://pradylang.vercel.app/docs/getting-started/overview) |
+| ⚡ Installation & Binaries | [/docs/getting-started/installation](https://pradylang.vercel.app/docs/getting-started/installation) |
+| 💻 Hello World Tutorial | [/docs/getting-started/hello-world](https://pradylang.vercel.app/docs/getting-started/hello-world) |
+
+### The Handbook
+| Page | URL |
+|---|---|
+| 📖 The Basics | [/docs/handbook/the-basics](https://pradylang.vercel.app/docs/handbook/the-basics) |
+| 🧩 Everyday Types | [/docs/handbook/everyday-types](https://pradylang.vercel.app/docs/handbook/everyday-types) |
+| 🔄 Control Flow & Matching | [/docs/handbook/control-flow](https://pradylang.vercel.app/docs/handbook/control-flow) |
+| λ Functions & Lambdas | [/docs/handbook/functions-and-lambdas](https://pradylang.vercel.app/docs/handbook/functions-and-lambdas) |
+| 🏛️ Architecture Contracts | [/docs/handbook/architecture-contracts](https://pradylang.vercel.app/docs/handbook/architecture-contracts) |
+
+### Language Reference
+| Page | URL |
+|---|---|
+| 🔤 Keywords & Grammar | [/docs/reference/keywords-and-syntax](https://pradylang.vercel.app/docs/reference/keywords-and-syntax) |
+| 🏷️ Built-In Primitive Types | [/docs/reference/built-in-types](https://pradylang.vercel.app/docs/reference/built-in-types) |
+| 🌲 All 28 Data Structures | [/docs/reference/data-structures](https://pradylang.vercel.app/docs/reference/data-structures) |
+| 📚 Standard Library | [/docs/reference/standard-library](https://pradylang.vercel.app/docs/reference/standard-library) |
+
+### Tooling & IDE
+| Page | URL |
+|---|---|
+| ⌨️ CLI Reference | [/docs/tooling/cli-reference](https://pradylang.vercel.app/docs/tooling/cli-reference) |
+| 📦 Package Manager | [/docs/tooling/package-manager](https://pradylang.vercel.app/docs/tooling/package-manager) |
+| 💡 VS Code & LSP | [/docs/tooling/editor-extensions](https://pradylang.vercel.app/docs/tooling/editor-extensions) |
+
+---
+
+## 🛠️ CLI Reference
+
+```bash
+prady version              # Show compiler version
+prady run examples/hello.pr   # Run a .pr file
+prady check examples/hello.pr # Type-check and report diagnostics
+prady ast examples/hello.pr   # Print the Abstract Syntax Tree
+prady tokens examples/hello.pr # Print tokenizer output
+prady new my-project          # Scaffold a new Prady project
+prady build                   # Compile to native binary
+```
+
+> Full CLI reference: **[pradylang.vercel.app/docs/tooling/cli-reference](https://pradylang.vercel.app/docs/tooling/cli-reference)**
+
+---
+
+## 💡 VS Code Extension
+
+Install full IDE support for `.pr` files:
+
+**[pradylang.vercel.app/docs/tooling/editor-extensions](https://pradylang.vercel.app/docs/tooling/editor-extensions)**
+
+**Repository:** [github.com/technopradyumn/vscode-prady](https://github.com/technopradyumn/vscode-prady)
+
+Features:
+- 🎨 Syntax highlighting for all keywords, types, architecture blocks
+- ⚡ `Ctrl+Alt+N` to run `.pr` files instantly
+- 🔍 Live error diagnostics with precise source spans
+- 💡 Snippets for `fn`, `main`, `let`, `arch`, `struct`, `@test`
+- 🔵 LSP: hover types, go-to-definition, auto-complete
+
 ---
 
 ## 📦 Workspace Structure
@@ -109,28 +216,46 @@ architecture backend {
 │   ├── prady-ast/                # Abstract Syntax Tree nodes & visitor
 │   ├── prady-lexer/              # Tokenizer with full keyword & literal support
 │   ├── prady-parser/             # Recursive descent & Pratt expression parser
-│   └── prady-cli/                # 'prady' developer tool and command runner
+│   ├── prady-interp/             # Tree-walk interpreter & runtime
+│   ├── prady-cli/                # 'prady' developer tool and command runner
+│   └── prady-lsp/                # Language Server Protocol implementation
 ├── examples/                     # Verified .pr source examples
-├── tests/                        # Comprehensive integration & snapshot test suites
-└── docs/                         # Specification & architecture documentation
+└── install.sh / install.ps1      # One-line system installers
 ```
 
 ---
 
 ## 🗺️ Roadmap
-- [x] **Phase 1**: Workspace, Lexer, AST, Parser, Diagnostics Engine, CLI (`prady`), Test harness.
-- [ ] **Phase 2**: Name Resolution, Primitive Types, Functions, Structs, and Basic Evaluation.
-- [ ] **Phase 3**: LLVM Native Code Generation & Executable Linking.
-- [ ] **Phase 4**: Enums, Pattern Matching, Generics, Option/Result, Module system.
-- [ ] **Phase 5**: Complete DSA & Collections standard library with complexity guarantees.
-- [ ] **Phase 6**: OOP, Interfaces, Traits, and Architecture/Quality Policy Engine.
-- [ ] **Phase 7**: Async Runtime, Networking, HTTP, JSON, and Server Templates.
-- [ ] **Phase 8**: Package Manager, Registry, Formatter, and Linter.
-- [ ] **Phase 9**: Language Server Protocol (LSP) and VS Code Extension.
-- [ ] **Phase 10**: WebAssembly (WASI), FFI, Security Hardening, and Performance Suite.
-- [ ] **Phase 11**: Stabilization and 1.0 Release.
+
+- [x] **Phase 1** — Workspace, Lexer, AST, Parser, Diagnostics Engine, CLI, Test harness
+- [x] **Phase 2** — Name Resolution, Primitive Types, Functions, Structs, and Interpreter
+- [x] **Phase 9** — Language Server Protocol (LSP) and VS Code Extension
+- [ ] **Phase 3** — LLVM Native Code Generation & Executable Linking
+- [ ] **Phase 4** — Enums, Pattern Matching, Generics, Option/Result, Module system
+- [ ] **Phase 5** — Complete DSA & Collections standard library with complexity guarantees
+- [ ] **Phase 6** — OOP, Interfaces, Traits, and Architecture/Quality Policy Engine
+- [ ] **Phase 7** — Async Runtime, Networking, HTTP, JSON, and Server Templates
+- [ ] **Phase 8** — Package Manager, Registry, Formatter, and Linter
+- [ ] **Phase 10** — WebAssembly (WASI), FFI, Security Hardening, and Performance Suite
+- [ ] **Phase 11** — Stabilization and stable release
+
+---
+
+## 🔗 Links
+
+| Resource | URL |
+|---|---|
+| 🌐 Official Website | https://pradylang.vercel.app |
+| 📖 Documentation | https://pradylang.vercel.app/docs |
+| ▶ Playground | https://pradylang.vercel.app/play |
+| ⬇ Downloads | https://pradylang.vercel.app/download |
+| 🐙 GitHub (Compiler) | https://github.com/technopradyumn/prady |
+| 🔌 GitHub (VS Code Ext.) | https://github.com/technopradyumn/vscode-prady |
+| 🐛 Issues | https://github.com/technopradyumn/prady/issues |
+| 📦 Releases | https://github.com/technopradyumn/prady/releases |
 
 ---
 
 ## 📄 License
-Prady is dual-licensed under the **MIT** or **Apache-2.0** license.
+
+Prady is dual-licensed under the **MIT** or **Apache-2.0** license. See [LICENSE](LICENSE) for details.
