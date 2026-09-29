@@ -47,10 +47,13 @@ else
     echo "Downloading Prady package from GitHub..."
     curl -fsSL "$URL" | tar -xz -C "$PRADY_BIN"
     
-    # Flatten if directory was packaged inside
-    find "$PRADY_BIN" -name "prady" -type f -exec mv {} "$PRADY_BIN/" \; 2>/dev/null || true
-    find "$PRADY_BIN" -name "prady-lsp" -type f -exec mv {} "$PRADY_BIN/" \; 2>/dev/null || true
-    chmod +x "$PRADY_BIN/prady" "$PRADY_BIN/prady-lsp"
+    # Flatten if directory was packaged inside (handles prady-VERSION-TARGET/ subfolder)
+    find "$PRADY_BIN" -name "prady" -not -path "$PRADY_BIN/prady" -type f -exec mv {} "$PRADY_BIN/" \; 2>/dev/null || true
+    find "$PRADY_BIN" -name "prady-lsp" -not -path "$PRADY_BIN/prady-lsp" -type f -exec mv {} "$PRADY_BIN/" \; 2>/dev/null || true
+    # Remove any leftover subdirectories
+    find "$PRADY_BIN" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \; 2>/dev/null || true
+    chmod +x "$PRADY_BIN/prady"
+    chmod +x "$PRADY_BIN/prady-lsp" 2>/dev/null || true
 fi
 
 # Configure PATH in shell config

@@ -9,7 +9,8 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "  Installing Prady Toolchain (v1.0.0 GA)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-$PradyHome = Join-Path $HOME ".prady"
+# Use USERPROFILE for reliable home dir on Windows
+$PradyHome = Join-Path $env:USERPROFILE ".prady"
 $PradyBin  = Join-Path $PradyHome "bin"
 
 # 1. Create target directory
@@ -21,12 +22,12 @@ $Installed = $false
 
 # 2. Check if running in a cloned local repo with pre-built release binaries
 $LocalPrady = Join-Path $PSScriptRoot "target\release\prady.exe"
-$LocalLsp   = Join-Path $PSScriptRoot "target\release\prady-lsp.exe"
 
-if ((Test-Path $LocalPrady) -and (Test-Path $LocalLsp)) {
+if (Test-Path $LocalPrady) {
     Write-Host "Installing from local release build..." -ForegroundColor Green
     Copy-Item $LocalPrady -Destination $PradyBin -Force
-    Copy-Item $LocalLsp   -Destination $PradyBin -Force
+    $LocalLsp = Join-Path $PSScriptRoot "target\release\prady-lsp.exe"
+    if (Test-Path $LocalLsp) { Copy-Item $LocalLsp -Destination $PradyBin -Force }
     $Installed = $true
 } else {
     # 3. Direct automated download from official GitHub release
@@ -52,19 +53,22 @@ if ((Test-Path $LocalPrady) -and (Test-Path $LocalLsp)) {
     }
 
     if ($DownloadSuccess) {
+        $ExtractDir = Join-Path $env:TEMP "prady-extract"
+        if (Test-Path $ExtractDir) { Remove-Item $ExtractDir -Recurse -Force }
         Write-Host "Extracting binaries to $PradyBin..." -ForegroundColor Green
-        Expand-Archive -Path $ZipPath -DestinationPath $PradyBin -Force
+        Expand-Archive -Path $ZipPath -DestinationPath $ExtractDir -Force
         Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue
 
-        # Flatten in case archive contains a subfolder
-        Get-ChildItem -Path $PradyBin -Filter "*.exe" -Recurse | ForEach-Object {
-            if ($_.DirectoryName -ne $PradyBin) {
-                Move-Item -Path $_.FullName -Destination $PradyBin -Force
-            }
+        # Move all .exe files from any subdirectory to $PradyBin (handles nested folder)
+        Get-ChildItem -Path $ExtractDir -Filter "*.exe" -Recurse | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination $PradyBin -Force
         }
+        Remove-Item $ExtractDir -Recurse -Force -ErrorAction SilentlyContinue
         $Installed = $true
     } else {
-        Write-Host "Direct download failed. Please ensure a GitHub Release v1.0.0 exists." -ForegroundColor Red
+        Write-Host "" -ForegroundColor Red
+        Write-Host "ERROR: Could not download Prady binaries." -ForegroundColor Red
+        Write-Host "Expected: https://github.com/technopradyumn/prady/releases/download/v1.0.0/prady-v1.0.0-x86_64-pc-windows-msvc.zip" -ForegroundColor Yellow
         Write-Host "Fallback: Build from source using 'cargo build --release'." -ForegroundColor Yellow
         exit 1
     }
